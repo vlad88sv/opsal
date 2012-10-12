@@ -152,9 +152,9 @@ if (isset($_POST['filtrar']))
         $tfiltros[] = 'AND tipo_contenedor = "'.$_POST['tipo_contenedor'].$_POST['tamano_contenedor'].'"';
     }
     
-    $rango = ' AND t3.x BETWEEN (SELECT x FROM opsal_posiciones WHERE x2 = "'.$_POST['rango_final_col'].'") AND  (SELECT x FROM opsal_posiciones WHERE x2 = "'.$_POST['rango_inicio_col'].'")';
+    $rango = ' AND t3.x BETWEEN (SELECT x FROM opsal_posicion WHERE x2 = "'.$_POST['rango_final_col'].'" LIMIT 1) AND (SELECT x FROM opsal_posicion WHERE x2 = "'.$_POST['rango_inicio_col'].'" LIMIT 1)';
     
-    $rango .= ' AND t3.y BETWEEN  (SELECT y FROM opsal_posiciones WHERE y2 = "'.$_POST['rango_final_fila'].') AND  (SELECT y FROM opsal_posiciones WHERE y2 = "'.$_POST['rango_inicio_fila'].'")';
+    $rango .= ' AND t3.y BETWEEN (SELECT y FROM opsal_posicion WHERE y2 = "'.$_POST['rango_final_fila'].'" LIMIT 1) AND (SELECT y FROM opsal_posicion WHERE y2 = "'.$_POST['rango_inicio_fila'].'" LIMIT 1)';
     
     if (isset($_POST['limite']) && is_numeric($_POST['limite']))
     {
