@@ -53,6 +53,11 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
 </li>
 </ul>
 <script type="text/javascript">
+    function ejecutar_busqueda_codigo_contenedor(codigo_contenedor)
+    {
+	$.facebox({ ajax: '/ajax.ContenedorPorCodigo.php?busqueda=' + codigo_contenedor });
+    }
+    
     $(function(){
 	$(document).bind('reveal.facebox', function() {
 	    if ($("#drop_target").length == 0)
@@ -61,25 +66,26 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
 	    }
 	});
 	
+	$("#ver_historial").live('click', function(){
+	    window.location = '/historial.html?ID='+$(this).attr('rel');
+	});
+	
+	$("#bq_usar_contenedor").live('click', function(){
+		$("#drop_target #posicion_columna").val($(this).attr('col'));
+		$("#drop_target #posicion_fila").val($(this).attr('fila'));
+		$("#drop_target #posicion_nivel").val($(this).attr('nivel'));
+		$(".posicion").trigger('change');
+	});
+	
 	$('#ejecutar_traduccion').click(function(){
 	    $.post('ajax.traducir.php',{traducir:$("#traducir").val()}, function(data){
 		$("#traducido").val(data);
 	    });
 	    
 	});
-	$('#buscar').click(function(){
-	    $.facebox({ ajax: '/ajax.ContenedorPorCodigo.php?busqueda='+$('#busqueda').val() });
-	    $("#bq_usar_contenedor").live('click', function(){
-		$("#drop_target #posicion_columna").val($(this).attr('col'));
-		$("#drop_target #posicion_fila").val($(this).attr('fila'));
-		$("#drop_target #posicion_nivel").val($(this).attr('nivel'));
-		$(".posicion").trigger('change');
-	    });
-	    
-	    $("#ver_historial").live('click', function(){
-		window.location = '/historial.html?ID='+$(this).attr('rel');
-	    });
-	    
+
+	$('#buscar').click(function(){    
+	    ejecutar_busqueda_codigo_contenedor ($('#busqueda').val());
 	});
     });
 </script>
