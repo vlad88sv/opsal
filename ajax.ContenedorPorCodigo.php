@@ -6,7 +6,7 @@ require_once (__PHPDIR__."vital.php");
 $codigo_contenedor = strtoupper(preg_replace(array('/[^\w\d]/','/(\d{4}\w{7})/'),array('','$1'),$_GET['busqueda']));
 
 $c_ordenes = "
-SELECT codigo_orden, COALESCE(fechatiempo_egreso, 'aún en patio') AS fechatiempo_egreso_2, DATEDIFF(COALESCE(fechatiempo_egreso,NOW()), `arivu_ingreso`) AS 'dias_arivu' , DATEDIFF(COALESCE(fechatiempo_egreso,NOW()), `fechatiempo_ingreso`) AS 'dias_ingreso', DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', t4.`usuario` AS 'nombre_agencia', t3.`x2` , t3.`y2` , t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , t1.`nivel` , `clase` , `tara` , `chasis` , `transportista_ingreso` , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , `arivu_ingreso` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , `fechatiempo_egreso` , `ingresado_por`
+SELECT codigo_orden, COALESCE(fechatiempo_egreso, 'aún en patio') AS fechatiempo_egreso_2, `arivu_referencia`, DATEDIFF(COALESCE(fechatiempo_egreso,NOW()), `arivu_ingreso`) AS 'dias_arivu' , DATEDIFF(COALESCE(fechatiempo_egreso,NOW()), `fechatiempo_ingreso`) AS 'dias_ingreso', DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', t4.`usuario` AS 'nombre_agencia', t3.`x2` , t3.`y2` , t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , t1.`nivel` , `clase` , `tara` , `chasis` , `transportista_ingreso` , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , `arivu_ingreso` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , `fechatiempo_egreso` , `ingresado_por`
 FROM `opsal_ordenes` AS t1
 LEFT JOIN `opsal_tipo_contenedores` AS t2
 USING ( tipo_contenedor )
@@ -35,7 +35,7 @@ if (mysqli_num_rows($r_ordenes) == 1)
     $cepa_salida = ($f['dias_cepa'] ? '<b>'.$f['cepa_salida'].'</b> [<b>'.$f['dias_cepa'].'</b> días desde salida de CEPA]' : '<b>Sin datos</b>');
     echo "<p>CEPA salida: $cepa_salida</p>";
     $arivu_ingreso = ($f['dias_arivu'] ? '<b>'.$f['arivu_ingreso'].'</b> [<b>'.$f['dias_arivu'].'</b> días desde el ingreso]' : '<b>Sin datos</b>');
-    echo "<p>ARIVU ingreso: $arivu_ingreso</p>";
+    echo "<p>ARIVU <b>#".($f['arivu_referencia'] ? $f['arivu_referencia'] : '[sin número de ARIVU]')."</b>, ingreso: $arivu_ingreso</p>";
     echo '<p>Observaciones ingreso: <b>'.( $f['observaciones_ingreso'] ? $f['observaciones_ingreso'] : '[ninguna ingresada]' ).'</b></p>';
     echo '<br /><hr />';
     
