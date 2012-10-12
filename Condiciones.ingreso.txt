@@ -1,0 +1,8 @@
+Condiciones para poder ubicar un contenedor:
+    1. Que estiba sea mayor o igual a cero y menor o igual a 3          HECHO [ ]
+    2. Que se este posicionando sobre otro del mismo cubicaje           HECHO [ ]
+    3. Que no sea un punto en el dominio de otro contenedor             HECHO [ ]
+    
+Notas:
+    El paso 2 elimina la posiblidad que los otros contenedores (y+1, y+2) no esten al mismo nivel
+    Técnicamente todos los pasos pueden ser chequeados directamente en la representacion visual HTML/JS

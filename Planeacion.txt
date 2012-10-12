@@ -1,0 +1,22 @@
+Tabla de clientes -> automatica de tabla de cuenta con tipo = cliente
+Tabla de lo que se va facturando
+
+Tabla de transportistas
+Tabla de cheques
+
+Tabla ingresos ---\ 
+Tabla salidas  ----> Tabla de ordenes
+
+Tabla movimientos
+
+
+Tabla "mapa de posiciones"
+
+------------------------------------
+
+1. Que quede un "ghost" del contenedor donde se le dió clic al mapa.                                        HECHO [ ]
+2. Que al momento de posicionar el contenedor le diga al operador si es buena o mala decisión y porque.     HECHO [ ]
+-------------------------------------------
+
+
+Opciones de Administración general
