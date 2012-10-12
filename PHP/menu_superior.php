@@ -20,7 +20,7 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
 }
 ?>
 <ul id="nav" class="dropdown dropdown-horizontal">
-<li><a href="/" title="Inicio">Inicio</a></li>
+<li><a href="/" title="Alertas">Alertas</a></li>
 <li><a href="/contenedores.html" title="Módulo de contenedores">Contenedores</a>
     <ul>
         <li><a href="/control.salidas.bloque.html" title="Salidas en bloque">Reporte salidas en bloque</a>
