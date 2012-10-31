@@ -68,7 +68,7 @@ LEFT JOIN  `opsal_ordenes` AS t1
 USING ( codigo_orden ) 
 LEFT JOIN  `opsal_usuarios` AS t2 ON t1.codigo_agencia = t2.codigo_usuario
 LEFT JOIN  `opsal_tipo_contenedores` AS t3 ON t3.tipo_contenedor = t1.tipo_contenedor
-WHERE  `estado` =  "dentro"
+WHERE  `estado` =  "dentro" AND motivo="remocion"
 GROUP BY t1.codigo_agencia
 ';
 
@@ -84,14 +84,12 @@ mysqli_data_seek($rMovimientos,0);
 
 // Reporte de movimientos segun cobro
 $c = '
-SELECT IF(cobrar_a=10,"Interno","Agencia") "Cobrado a", COUNT( * ) AS  "Cantidad"
+SELECT t2.grupo AS "Cobrado a", COUNT( * ) AS  "Cantidad"
 FROM  `opsal_movimientos` AS t0
-LEFT JOIN  `opsal_ordenes` AS t1
-USING ( codigo_orden ) 
-LEFT JOIN  `opsal_usuarios` AS t2 ON t1.codigo_agencia = t2.codigo_usuario
-LEFT JOIN  `opsal_tipo_contenedores` AS t3 ON t3.tipo_contenedor = t1.tipo_contenedor
-WHERE  `estado` =  "dentro"
-GROUP BY IF(cobrar_a=10,"Interno","Agencia")
+LEFT JOIN  `opsal_ordenes` AS t1 USING ( codigo_orden ) 
+LEFT JOIN  `opsal_usuarios` AS t2 ON t0.cobrar_a = t2.codigo_usuario
+WHERE  `estado` =  "dentro" AND motivo="remocion"
+GROUP BY t2.grupo
 ';
 
 $rMovimientosCobro = db_consultar($c);
@@ -128,11 +126,11 @@ mysqli_data_seek($rMovimientosCobro,0);
 
 <script type="text/javascript">
   function drawVisualization() {
-<?php echo gpie($rTEUS,"TEU por agencia",'v1','Agencia','TEU'); ?>
-<?php echo gpie($rContenedores,"Cantidad de Contenedores",'v2','Contenedores','Cantidad'); ?>
+<?php echo gpie($rTEUS,"TEU por naviera",'v1','Agencia','TEU'); ?>
+<?php echo gpie($rContenedores,"Cantidad de contenedores",'v2','Contenedores','Cantidad'); ?>
 <?php echo gpie($rTipos,"Tipos de contenedores",'v3','Tipo de contenedor','Cantidad'); ?>
-<?php echo gpie($rMovimientos,"Movimiento de contenedores según agencia afectada",'v4','Agencia','Cantidad de movimientos'); ?>
-<?php echo gpie($rMovimientosCobro,"Movimiento de contenedores según agencia cobrada",'v5','Agencia','Cantidad de movimientos'); ?>
+<?php echo gpie($rMovimientos,"Remoción de contenedores según naviera afectada",'v4','Agencia','Cantidad de movimientos'); ?>
+<?php echo gpie($rMovimientosCobro,"Remoción de contenedores según naviera cobrada",'v5','Agencia','Cantidad de movimientos'); ?>
   }
   google.setOnLoadCallback(drawVisualization);
 </script>

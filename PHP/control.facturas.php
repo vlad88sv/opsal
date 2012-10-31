@@ -52,12 +52,17 @@ while ($f = mysqli_fetch_assoc($r))
     $datos .= '<tr><td>'.$f['codigo_factura'].'</td><td>'.$f['agencia'].'</td><td>'.$f['periodo_inicio'].'</td><td>'.$f['periodo_final'].'</td><td>'.$f['operador'].'</td><td>'.$f['fechatiempo'].'</td><td>$'.$f['total'].'</td></tr>';
     $datos .= '</table>';
 
-    $controles = '<input type="checkbox" class="flag_enviada" '.($f['flag_enviada'] == '1' ? 'checked="checked"' : '').' value="1" /> Enviada&nbsp';
+    
+    $controles  = '<form action="/impresion.html" method="POST">';
+    $controles .= '<select name="tipo_impresion" class="imprimir_legal"><option value="consumidor_final">Consumidor final</option><option value="credito_fiscal">Crédito físcal</option></select> ';
+    $controles .= '<input name="impresion_fiscal" type="submit" class="imprimir_legal" value="Impresión fiscal" />&nbsp;';
+    $controles .= '<input name="impresion_anexo" type="submit" class="imprimir_anexo" value="Impresión anexo" />&nbsp;';
+    $controles .= '</form>';
+    $controles .= '<hr />';
+    $controles .= '<input type="checkbox" class="flag_enviada" '.($f['flag_enviada'] == '1' ? 'checked="checked"' : '').' value="1" /> Enviada&nbsp';
     $controles .= '<input type="checkbox" class="flag_cobrada" '.($f['flag_cobrada'] == '1' ? 'checked="checked"' : '').' value="1" /> Cobrada&nbsp';
     $controles .= '<input type="checkbox" class="flag_anulada" '.($f['flag_anulada'] == '1' ? 'checked="checked"' : '').' value="1" /> Anulada<br />';
-    $controles .= '<input type="button" class="imprimir_legal" value="Impresión legal" />&nbsp;';
-    $controles .= '<input type="button" class="imprimir_anexo" value="Impresión anexo" />&nbsp;';
-    $controles .= '<input type="button" class="imprimir_anexo" value="Ver anexo" />';
+    
     
     echo sprintf('<tr><td style="padding:10px;">%s</td><td style="padding:10px;">%s</td></tr>',$datos,$controles);
 }

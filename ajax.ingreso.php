@@ -22,7 +22,7 @@ if (isset($_POST['guardar']))
     $_POST['tipo_contenedor'] = $_POST['tipo_contenedor'].$_POST['tamano_contenedor'];
         
             
-    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_contenedor','cheque_ingreso','clase','tipo_contenedor','codigo_agencia','tara','chasis','transportista_ingreso','buque_ingreso','cepa_salida','arivu_ingreso','arivu_egreso','observaciones_ingreso','arivu_referencia','fechatiempo_ingreso','eir_ingreso','ingreso_con_danos','cliente_ingreso')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_contenedor','cheque_ingreso','clase','tipo_contenedor','codigo_agencia','tara','chasis','transportista_ingreso','buque_ingreso','cepa_salida','arivu_ingreso','arivu_egreso','observaciones_ingreso','arivu_referencia','fechatiempo_ingreso','eir_ingreso','ingreso_con_danos','cliente_ingreso','chofer_ingreso')));
     $DATOS['estado'] = 'dentro';
     $DATOS['nivel'] = $_POST['posicion_nivel'];
     $DATOS['codigo_posicion'] = $codigo_posicion;

@@ -2,6 +2,7 @@
 if (empty($_GET['modo']))
     $_GET['modo'] = 'ingreso';
 
+$menu[] = array('url' => '/contenedores.html','modo' => 'patio','titulo' => 'PATIO');
 $menu[] = array('url' => '/contenedores.html','modo' => 'ingreso','titulo' => 'RECEPCION');
 $menu[] = array('url' => '/contenedores.html','modo' => 'remociones','titulo' => 'REMOCION');
 $menu[] = array('url' => '/contenedores.html','modo' => 'salida','titulo' => 'DESPACHO');
@@ -30,6 +31,9 @@ switch ($_GET['modo'])
         break;
     case 'salida.bloque':
         require_once('PHP/contenedores.salida.bloque.php');
+        break;
+    case 'patio':
+        require_once('PHP/contenedores.patio.php');
         break;
     default:
         echo '<p>No implementado</p>';
@@ -66,7 +70,7 @@ switch ($_GET['modo'])
     <div style="position: relative;float:left;width:732px;">
     
         <div id="contenedor_mapa" style="text-align:center;">
-            <p>Actulizando visualización...</p><br />
+            <p style="color:black;font-size:1.1em;">Actualizando mapa...</p><br />
             <img src="/IMG/general/cargando.gif" />
         </div>
         <div id="contenedor_visual" style="position:absolute;background-color:#00FAFF;z-index:99;"></div>
@@ -133,7 +137,7 @@ switch ($_GET['modo'])
                                     var target = $(event.originalEvent.target);
      
                                     if(target.length) {
-                                            api.set('content.text', target.attr('tooltip'));
+                                            api.set('content.text', target.attr('qtip'));
                                     }
                             }
                     }
@@ -145,10 +149,6 @@ switch ($_GET['modo'])
     
     $(function(){
         iniciar_mapa();
-        
-        $('.limitar_nivel').click(function(){
-            
-        });
         
         $('#opsal_mapa #contenedor_mapa table td').live('contextmenu',function(event){
             event.preventDefault();

@@ -1,5 +1,4 @@
 <?php
-error_log('+++++++++++++++++++ iniciando todos los sistemas OPSAL +++++++++++++++++++');
 $bench_ultimo_evento = 'Big Bang';
 $bench_referencia = microtime(true);
 
@@ -17,6 +16,7 @@ define('db__db','opsal');
 define('smtp_usuario','notificaciones@sistemaopsal.com');
 define('smtp_clave','opsalopsal');
 
+define('PROY_EMPRESA','OPERADORES PORTUARIOS SALVADOREÑOS, S.A. DE C.V.');
 define('PROY_NOMBRE','OPSAL');
 define('PROY_NOMBRE_CORTO','OPSAL');
 define('PROY_TELEFONO','22XX-XXXX');

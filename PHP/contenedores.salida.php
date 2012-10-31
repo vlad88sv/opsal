@@ -18,6 +18,11 @@
         </tr>
         
         <tr>
+            <td>Datos encontrados</td>
+            <td style="text-align: center;"><div id="datos_encontrados" style="height:100px;width:200px;margin:auto;overflow-y: auto;background-color:white;color:gray;text-align: left;font-size:10px;"</td>
+        </tr>
+        
+        <tr>
             <td>Tipo de salida</td>
             <td>
                 <select id="tipo_salida" name="tipo_salida">
@@ -42,10 +47,9 @@
             </td>
         </tr>
         
-        <tr><td>Datos encontrados</td><td style="text-align: center;"><div id="datos_encontrados" style="height:100px;width:200px;margin:auto;overflow-y: auto;background-color:white;color:gray;text-align: left;font-size:10px;"</td></tr>
-        
         <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque_egreso" /></td></tr>
-        <tr><td>Transportista</td><td><input type="text" id="transportista" name="transportista_egreso" /></td></tr>
+        <tr><td>Transporte</td><td><input type="text" id="transportista" name="transportista_egreso" /></td></tr>
+        <tr><td>Chofer</td><td><input type="text" value="" id="chofer_egreso" name="chofer_egreso" /></td></tr>
         <tr><td>Fecha salida</td><td><input type="text" name="fechatiempo_egreso" id="fechatiempo_egreso" class="calendario" /></td></tr>
         <tr><td>Chasis</td><td><input type="text" value="" id="chasis" name="chasis_egreso" /></td></tr>
         <tr><td>Buque</td><td><input type="text" name="buque_egreso" id="buque_egreso" /></td></tr>
@@ -149,6 +153,8 @@
                 $("#datos_encontrados").html(data.resultados);
                 $("#codigo_orden").val(data.codigo_orden);
             },'json');
+            
+            flag_posicion = false;
         
         } else {
         
@@ -161,6 +167,15 @@
 
         $('#frm_salida').submit(function(event){
             event.preventDefault();
+            
+            
+            // Si ha llenado el buque de egreso, tiene que ser embarque
+            
+            if ($("select#tipo_salida").val() == "terrestre" && $("#buque_egreso").val() != "")
+            {
+                alert("¿Buque para salida terrestre?. Creo que se ha equivocado.");
+                return;
+            }
             
             if ($("select#tipo_salida").val() == "")
             {

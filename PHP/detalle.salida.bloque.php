@@ -43,9 +43,11 @@ if (isset($_POST['ejecutar_salida']))
         // Si fue sucio entonces ya lo harán despues.
         if (isset($_POST['salida'][$indice]))
         {
+            $codigo_agencia = db_obtener('opsal_ordenes','codigo_agencia','codigo_orden="'.$codigo_orden.'"');
             unset($DATOS);
             $DATOS['codigo_posicion'] = 0;
             $DATOS['nivel'] = 0;
+            $DATOS['cobrar_a'] = $codigo_agencia;
             $DATOS['motivo'] = 'desestiba';
             $DATOS['codigo_orden'] = $codigo_orden;
             $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');

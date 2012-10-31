@@ -11,12 +11,16 @@ $c = 'SELECT codigo_salida, fechatiempo, COUNT(*) AS numero_contenedores, usuari
 $r = db_consultar($c);
 ?>
 <h1>Historial de salidas en bloque</h1>
-<div class="noimprimir" style="border-bottom:1px solid gray;">
+<div class="noimprimir">
     <form action="/control.salidas.bloque.html" method="get">
         Fecha inicio: <input type="text" class="calendario" name="fecha_inicio" value="" /> Fecha final: <input type="text" class="calendario" name="fecha_final" value="" /> <input type="submit" value="Filtrar" />
-    </div>
+    </form>
+    <hr />
+    <br />
 </div>
 <?php
+echo '<div class="exportable">';
+echo '<h1>Mostrando  <b>'.mysqli_num_rows($r).'</b> despachos en bloque de <b>'.$fecha_inicio.'</b> a <b>'.$fecha_final.'</b> para <b>'.$agencias[@$_GET['codigo_agencia']].'</b></h1>';
 if (mysqli_num_rows($r) > 0)
 {
     echo '<table class="tabla-estandar opsal_tabla_ancha opsal_tabla_borde_oscuro">';
@@ -31,6 +35,7 @@ if (mysqli_num_rows($r) > 0)
 } else {
     echo '<p>No hay datos</p>';
 }
+echo '</div>';
 ?>
 <script type="text/javascript">
     $(function(){

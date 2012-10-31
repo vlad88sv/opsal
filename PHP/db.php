@@ -146,6 +146,11 @@ function db_obtener($tabla,$campo,$where)
     return $f['resultado'];
 }
 
+function db_fetch($resultado)
+{
+    return mysqli_fetch_assoc($resultado);
+}
+
 // Usar solamente en scripts que no procesen post
 function memcache_iniciar($contexto,$discriminador='')
 {
@@ -160,7 +165,7 @@ function memcache_iniciar($contexto,$discriminador='')
     if ($buffer)
     {
         echo $buffer;
-        echo '<!-- memcache.hash :: '.$hash.' !-->';
+        //echo '<!-- memcache.hash :: '.$hash.' !-->';
         return true;
     }
     

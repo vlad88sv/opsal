@@ -2,7 +2,7 @@
 /****************** guardar_factura *****************/
 if (isset($_POST['guardar_factura']))
 {
-    $factura = FacturarPeriodo($_POST['periodo_inicio'],$_POST['periodo_final'],$_POST['codigo_agencia'],$_POST['categoria']);
+    $factura = FacturarPeriodo($_POST);
     
     unset($DATOS);
     $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');
@@ -32,7 +32,7 @@ if (isset($_POST['guardar_factura']))
 $c = 'SELECT codigo_usuario, usuario FROM opsal_usuarios WHERE nivel="agencia" ORDER BY usuario ASC';
 $r = db_consultar($c);
 
-$options_agencia = '<option selected="selected" value="">Seleccione una</option>';
+$options_agencia = '<option selected="selected" value="">naviera</option>';
 if (mysqli_num_rows($r) > 0)
 {
     while ($registro = mysqli_fetch_assoc($r))
@@ -40,36 +40,75 @@ if (mysqli_num_rows($r) > 0)
         $options_agencia .= '<option value="'.$registro['codigo_usuario'].'">'.$registro['usuario'].'</option>';
     }
 }
+
 ?>
 <div class="noimprimir">
 <h1 class="opsal_titulo">Asistente de facturación</h1>
 <form action="/facturacion.html" method="post">
-    <div>
-        Inicio de período: <input type="text" class="calendario" name="periodo_inicio" value="" /> Fin de período: <input type="text" class="calendario" name="periodo_final" value="" /> Agencia: <select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select> <input type="submit" id="filtrar" name="filtrar" value="Filtrar" />
+    <hr />
+    <div style="font-size:0.8em;padding:4px;">
+        <b>Facturar para operación </b>
+        <select id="tipo_de_facturacion">
+            <option value="contenedores">Almacenaje y remociones</option>
+            <option value="condiciones">Elaboración de condición</option>
+            <option value="supervision">Supervisión de operaciones</option>
+            <option value="marchamos">Revisión de marchamos</option>
+            <option value="lineas">Líneas de amarre</option>
+        </select>
     </div>
-    <div id="categorias_facturacion">
-        <b>Facturar:</b>
-        <input type="checkbox" value="fact_almacenaje" name="flag[]" id="fact_almacenaje" checked="checked" /><label for="fact_almacenaje">Almacenaje</label>&nbsp;
-        <input type="checkbox" value="fact_movimientos" name="flag[]" id="fact_movimientos" checked="checked" /><label for="fact_movimientos">Movimientos</label>&nbsp;
-        <input type="checkbox" value="fact_elaboracion_condicion" name="flag[]" id="fact_elaboracion_condicion" checked="checked" /><label for="fact_elaboracion_condicion">Elaboración de condición</label>&nbsp;
-        <input type="checkbox" value="fact_lineas_amarre" name="flag[]" id="fact_lineas_amarre" checked="checked" /><label for="fact_lineas_amarre">Líneas de amarre</label>&nbsp;
-        <input type="checkbox" value="fact_carga_descarga" name="flag[]" id="fact_carga_descarga" checked="checked" /><label for="fact_carga_descarga">Supervisión carga y descarga</label>&nbsp;
-    </div> 
-</form>
+    <hr />
+    <div style="font-size:0.8em;padding:4px;">
+        De&nbsp;
+        <select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select>
+        &nbsp;los contenedores que&nbsp;
+        <select name="tipo_salida" id="tipo_salida">
+            <option value="patio">estan actualmente en el patio</option>
+            <option value="terrestre">fueron despachados vía terrestre</option>
+            <option value="embarque">fueron despachados vía embarque</option>
+        </select>        
+
+        <span id="seleccion_buque" style="display:none;">
+            &nbsp;en&nbsp;
+            <span id="seleccion_buque_load"></span>
+        </span>       
+
+        <span id="seleccion_solo_despacho" style="display:none;">
+        &nbsp;cobrar almacenaje&nbsp;
+        <select name="tipo_cobro" id="tipo_cobro">
+            <option value="periodo">solo del periodo</option>
+            <option value="completo">desde la recepción</option>
+        </select>
+        </span>
+        
+        <span id="texto_si_terrestre" style="display: none;">
+            si el despacho fue
+        </span>
+        
+        <span id="seleccion_periodo">
+            &nbsp;entre el&nbsp;
+            <input type="text" class="calendario" name="periodo_inicio" value="" style="width:60px;" />
+            &nbsp;al&nbsp;
+            <input type="text" class="calendario" name="periodo_final" value="" style="width:60px;" />
+        </span>
+        
+    </div>
 <br /><hr />
-<b>Ajustes especiales</b> <input type="checkbox" value="quirk_remociones_como_doble_estiba_desestiba" name="quirks[]" id="quirk_remociones_como_doble_estiba_desestiba" checked="checked" /><label for="quirk_remociones_como_doble_estiba_desestiba">Tratar remociones como doble estiba/desestiba</label>&nbsp;
-<hr /><br />
+<div style="text-align: center;padding:10px;"><input type="submit" id="filtrar" name="filtrar" value="Realizar filtrado" /></div>
+<hr />
+<input type="hidden" name="flag[]" value="fact_almacenaje" />
+<input type="hidden" name="flag[]" value="fact_movimientos" />
+</form>
 </div>
 <?php
 if (isset($_POST['filtrar']))
 {
-    // Le mostramos las ultimas 5 facturas que le envio a esta agencia de mierda
-    $factura = FacturarPeriodo($_POST['periodo_inicio'],$_POST['periodo_final'],$_POST['codigo_agencia'],$_POST['flag']);
+    $factura = FacturarPeriodo($_POST);
     echo '<form action="/facturacion.html" method="post">';
     
-    echo '<div style="border-radius:5px; border: 1px solid grey; padding: 5px;">';
+    echo '<div class="noimprimir" style="border-radius:5px; border: 1px solid grey; padding: 5px;">';
         echo '<h1>Totales</h1>';
         echo $factura['cuadro'];
+        echo '<div style="text-align:right;"><input type="submit" value="Guardar factura" name="guardar_factura" /></div>';
     echo '</div>';
     
     echo '<hr />';
@@ -84,7 +123,6 @@ if (isset($_POST['filtrar']))
         echo '<input type="hidden" name="periodo_inicio" value="'.$_POST['periodo_inicio'].'" />';
         echo '<input type="hidden" name="periodo_final" value="'.$_POST['periodo_final'].'" />';
         echo '<input type="hidden" name="codigo_agencia" value="'.$_POST['codigo_agencia'].'" />';
-        echo '<div style="text-align:right;"><input type="submit" value="Guardar factura" name="guardar_factura" /></div>';
     echo '</div>';
     
     echo '</form>';
@@ -94,7 +132,71 @@ if (isset($_POST['filtrar']))
     $(function(){
         $(".calendario").datepicker({dateFormat: 'yy-mm-dd', constrainInput: true, defaultDate: +0}).datepicker('setDate', new Date());
         
+        $('#tipo_de_facturacion').change(function(){
+            
+        });
+        
+        $('#tipo_cobro').change(function(){
+            
+            $('#texto_si_terrestre').hide();
+            $('#seleccion_periodo').show();
+            
+            if ($('#tipo_salida option:selected').val() == 'embarque' && $('#tipo_cobro option:selected').val() == 'completo')
+            {
+                $('#seleccion_periodo').hide();    
+            }
+            
+            if ( $('#tipo_salida option:selected').val() == 'terrestre' && $('#tipo_cobro option:selected').val() == 'completo' )
+            {
+                $('#texto_si_terrestre').show();
+            }
+        });
+        
+        $('#tipo_salida, #codigo_agencia').change(function(){
+            if ($('#tipo_salida option:selected').val() == 'embarque')
+            {
+                $('#tipo_cobro').val('periodo');
+                
+                $('#seleccion_solo_despacho').show();
+                $('#seleccion_buque').show();
+                $('#texto_si_terrestre').hide();
+                
+                $('#seleccion_buque_load').html('[cargando]').load('ajax.seguro.php',{accion : 'obtener_ultimos_buques', codigo_agencia : $("#codigo_agencia").val()});
+            }
+            
+            if ($('#tipo_salida option:selected').val() == 'terrestre')
+            {
+                if ($('#tipo_cobro option:selected').val() == 'completo')
+                {
+                    $('#texto_si_terrestre').show();
+                } else {
+                    $('#texto_si_terrestre').hide();
+                }
+                
+                $('#seleccion_solo_despacho').show();
+                $('#seleccion_periodo').show();
+                $('#seleccion_buque').hide();
+                $('#seleccion_buque_load').empty();
+            }
+            
+            if ($('#tipo_salida option:selected').val() == 'patio')
+            {
+                $('#texto_si_terrestre').hide();
+                $('#seleccion_solo_despacho').hide();
+                $('#seleccion_periodo').show();
+                $('#seleccion_buque').hide();
+                $('#seleccion_buque_load').empty();
+            }
+        });
+        
         $("#filtrar").click(function(event){
+            
+            if ($('#tipo_salida option:selected').val() == 'patio' && $('#tipo_cobro option:selected').val() == 'completo')
+            {
+                event.preventDefault();
+                alert('Selección inválida.\nNo puede facturar contenedores sin despacho desde la recepción.');
+            }
+            
             if ($("#codigo_agencia").val() == "")
             {
                 event.preventDefault();

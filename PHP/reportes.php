@@ -53,11 +53,12 @@ function gCol($resultado, $titulo, $divID, $columna, $fila)
 if (empty($_GET['modo']))
     $_GET['modo'] = 'patio';
 
+$menu[] = array('url' => '/reportes.html','modo' => 'financiero','titulo' => 'FINANCIERO');
 $menu[] = array('url' => '/reportes.html','modo' => 'historico','titulo' => 'HISTORICO');
 $menu[] = array('url' => '/reportes.html','modo' => 'patio','titulo' => 'PATIO');
-$menu[] = array('url' => '/reportes.html','modo' => 'ingresos','titulo' => 'INGRESOS');
-$menu[] = array('url' => '/reportes.html','modo' => 'movimientos','titulo' => 'MOVIMIENTOS');
-$menu[] = array('url' => '/reportes.html','modo' => 'salidas','titulo' => 'SALIDAS');
+$menu[] = array('url' => '/reportes.html','modo' => 'ingresos','titulo' => 'RECEPCIONES');
+$menu[] = array('url' => '/reportes.html','modo' => 'movimientos','titulo' => 'REMOCIONES');
+$menu[] = array('url' => '/reportes.html','modo' => 'salidas','titulo' => 'DESPACHOS');
 $menu[] = array('url' => '/reportes.html','modo' => 'agencia','titulo' => 'AGENCIA');
 
 foreach ($menu AS $id => $datos)

@@ -1,48 +1,139 @@
 <?php
-function FacturarPeriodo($periodo_inicio, $periodo_final, $codigo_agencia, $flags)
+function numero($numero)
+{
+    return number_format($numero,2,'.',',');
+}
+
+function dinero($numero)
+{
+    return '$'.numero($numero,2,'.',',');
+}
+
+function FacturarPeriodo(array $op)
 {
     $anexo = '';
     $cuadro = array();
     
+    $periodo_inicio = $op['periodo_inicio'];
+    $periodo_final = $op['periodo_final'];
+    $codigo_agencia = $op['codigo_agencia'];
+    $tipo_salida = $op['tipo_salida'];
+    
+    $flags = @$op['flag'];
+    $quirks = @$op['quirks'];
+    
     // Info
     $agencia = db_obtener('opsal_usuarios','usuario',"codigo_usuario='$codigo_agencia'");
+    
+    switch($op['tipo_salida'])
+    {
+        // Caso 1 - por despacho terrestre
+        case 'terrestre':
+            $where = 'AND t1.estado="fuera"  AND codigo_agencia="'.$codigo_agencia.'" AND t1.tipo_salida="terrestre" AND t1.fechatiempo_egreso IS NOT NULL AND DATE(fechatiempo_egreso) BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'"';
+            break;
+        
+        // Caso 2 - por despacho búque
+        case 'embarque':
+            $where = 'AND codigo_agencia="'.$codigo_agencia.'" AND t1.tipo_salida="embarque" AND t1.estado="fuera" AND t1.buque_egreso="'.$op['buque'].'"';
+            break;
+        
+        // Caso 3 - por estadía
+        case 'patio':
+            $where = 'AND codigo_agencia="'.$codigo_agencia.'" AND estado = "dentro" AND fechatiempo_egreso IS NULL AND fechatiempo_ingreso < "'.$periodo_final.'"';
+            $op['tipo_cobro'] = 'periodo';
+            break;
+    }       
+    
     echo '<p>Facturación para período de <b>'.$periodo_inicio . '</b> a <b>'.$periodo_final.'</b> para agencia <b>'.$agencia.'</b>';
     
     // Almacenaje - contenedores ingresados entre fecha_inicio y fecha_final
     if (in_array('fact_almacenaje',$flags))
     {
+        $anexo .= '<h2>Cargos por almacenaje</h2>';
+        
+        
+        if ($op['tipo_cobro'] == 'completo')
+        {
+            $inicio_cobro = 'DATE(`fechatiempo_ingreso`)';
+            $final_cobro = 'DATE( COALESCE( `fechatiempo_egreso`, NOW()) )';
+        } else {
+            $inicio_cobro = 'GREATEST (DATE(`fechatiempo_ingreso`), "'.$periodo_inicio.'")';
+            $final_cobro = 'LEAST ( DATE(COALESCE( `fechatiempo_egreso`, NOW())), "'.$periodo_final.'" ) ';
+        }
+        
+        $dias_en_patio = '(DATEDIFF(DATE( COALESCE( `fechatiempo_egreso`, NOW()) ), DATE(`fechatiempo_ingreso`)) + 1)';
+        
         $c = '
-        SELECT CONCAT( x2, "-", y2, "-", nivel ) AS "Posición", `codigo_contenedor` AS "Código contenedor", tipo_contenedor AS "Tipo", DATE( `arivu_egreso` ) AS "Vencimiento ARIVU", DATEDIFF( `arivu_egreso` , NOW( ) ) AS "Venc. ARIVU", @fecha_ingreso := DATE( `fechatiempo_ingreso` ) AS "Fecha Ingreso", DATE( `fechatiempo_egreso` ) AS "Fecha salida", @inicio_cobro := GREATEST (DATE(`fechatiempo_ingreso`), "'.$periodo_inicio.'") AS "Inicio de cobro", DATEDIFF( NOW() , `fechatiempo_ingreso` ) AS "Días en patio totales",  @dias_en_patio := GREATEST(DATEDIFF( COALESCE( `fechatiempo_egreso`, "'.$periodo_final.'" ) , GREATEST (`fechatiempo_ingreso`, "'.$periodo_inicio.'")), 0) AS "Días tomados", @dias_libres := GREATEST(0,(t4.`dias_libres_2040`-GREATEST(0, (DATEDIFF(@inicio_cobro,@fecha_ingreso) )))) AS "Días libres aplicables", @dias_cobrados := GREATEST( @dias_en_patio -  @dias_libres , 0 ) AS "Días cobrados", @precio_dia := IF( t3.cobro =20, t4.`p_almacenaje_20` , t4.`p_almacenaje_40` ) AS "Precio por día", @precio_dia * @dias_cobrados AS "Subtotal"
+        SELECT `codigo_contenedor`, tipo_contenedor, DATE( `arivu_ingreso` + INTERVAL 90 DAY) AS "vencimiento_arivu", DATEDIFF( `arivu_ingreso` + INTERVAL 90 DAY , NOW( ) ) AS "dias_para_vencimiento_arivu", DATE( `fechatiempo_ingreso` ) AS "fecha_ingreso_fmt", COALESCE(DATE( `fechatiempo_egreso` ), "N/A") AS "fecha_salida_fmt", @inicio_cobro := '.$inicio_cobro.' AS "inicio_cobro", '.$final_cobro.' AS "final_cobro", '.$dias_en_patio.' AS "dias_en_patio",  @dias_tomados := GREATEST( (DATEDIFF( '.$final_cobro.' , '.$inicio_cobro.') + 1) , 0) AS "dias_tomados", @dias_libres := LEAST(@dias_tomados, GREATEST(0, (t4.`dias_libres_2040` - DATEDIFF(@inicio_cobro, DATE( `fechatiempo_ingreso` ))))) AS "dias_libres_aplicables", @dias_cobrados := GREATEST( @dias_tomados -  @dias_libres , 0 ) AS "dias_cobrados", @precio_dia := IF( t3.cobro =20, t4.`p_almacenaje_20` , t4.`p_almacenaje_40` ) AS "precio_por_dia", @precio_dia * @dias_cobrados AS "subtotal"
         FROM `opsal_ordenes` AS t1
         LEFT JOIN `opsal_posicion` AS t2
         USING ( codigo_posicion )
         LEFT JOIN `opsal_tipo_contenedores` AS t3
         USING ( tipo_contenedor )
         LEFT JOIN `opsal_tarifas` AS t4 ON t1.`codigo_agencia` = t4.`codigo_usuario`
-        WHERE fechatiempo_ingreso < "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'"
-        ORDER BY  `fechatiempo_ingreso` ASC';
+        WHERE 1 '.$where.'
+        ORDER BY `fechatiempo_ingreso` ASC, `fechatiempo_egreso` DESC, tipo_contenedor DESC';
         $r = db_consultar($c);
-        $anexo .= '<h2>Cargos por almacenaje</h2>';
-        $anexo .= db_ui_tabla($r,'class="opsal_tabla_ancha  tabla-estandar opsal_tabla_borde_oscuro tabla-fuente-minima tabla-una-linea"');
+
+        $anexo .= '<div class="exportable" rel="Cargos por almacenaje">';
+        $anexo .= '<p>Cargos por almacenaje de <b>'.mysqli_num_rows($r).'</b> contenedores</p>';
+        $anexo .= '<p>Periodo de <b>'.$periodo_inicio . '</b> a <b>'.$periodo_final.'</p><br />';        
         
-        mysqli_data_seek($r,0);
+        $anexo .= '<table class="opsal_tabla_ancha tabla-estandar opsal_tabla_borde_oscuro tabla-una-linea">';
+
+        $anexo .= '
+        <thead><tr>
+        <th>No.</th>
+        <th>Contenedor</th>
+        <th>Tipo</th>
+        <th><acronym title="Fecha de Vencimiento ARIVU">FVA</acronym></th>
+        <th><acronym title="Días restantes para el vencimiento del ARIVU">DVA</acronym></th>
+        <th>Recepción</th>
+        <th>Inicio cobro</th>
+        <th>Final cobro</th>
+        <th>Despacho</th>
+        <th><acronym title="Días en patio">DEP</acronym></th>
+        <th><acronym title="Días libres aplicables">DLA</acronym></th>
+        <th><acronym title="Días cobrados">DC</acronym></th>
+        <th>Precio por día</th>
+        <th>Subtotal</th>
+        <th>IVA</th>
+        <th>Total</th>
+        </tr></thead>';
         
-        $totales['fact_almacenaje'] = 0;
-        while ($f = mysqli_fetch_assoc($r))
+        $total_iva = $total_siniva = 0;
+        $i = 1;
+        while ($f = db_fetch($r))
         {
-            $totales['fact_almacenaje'] += $f['Subtotal'];
+            $anexo .= '<tr><td>'.$i.'</td><td>'.$f['codigo_contenedor'].'</td><td>'.$f['tipo_contenedor'].'</td><td>'.$f['vencimiento_arivu'].'</td><td>'.$f['dias_para_vencimiento_arivu'].'</td><td>'.$f['fecha_ingreso_fmt'].'</td><td>'.$f['inicio_cobro'].'</td><td>'.$f['final_cobro'].'</td><td>'.$f['fecha_salida_fmt'].'</td><td>'.$f['dias_en_patio'].'</td><td>'.$f['dias_libres_aplicables'].'</td><td>'.$f['dias_cobrados'].'</td><td>'.dinero($f['precio_por_dia']).'</td><td>'.dinero($f['subtotal']).'</td><td>'.dinero($f['subtotal'] * 0.13).'</td><td>'.dinero($f['subtotal'] * 1.13).'</td></tr>';
+        
+            $total_siniva += ($f['subtotal']);
+            $total_iva += ($f['subtotal'] * 0.13);
+            $i++;
         }
+        $anexo .= '<tr><th colspan="13"></th><th>'.dinero($total_siniva).'</th><th>'.dinero($total_iva).'</th><th>'.dinero($total_iva + $total_siniva).'</th></tr>';
+        
+        $anexo .= '</table>';
+        
+        $totales['fact_almacenaje'] = ($total_iva + $total_siniva);
+    
+        $anexo .= '</div>';
         
         $anexo .= '<p>Cobro sugerido: $'.number_format($totales['fact_almacenaje'],2,'.',',').'</p>';
         
         $cuadro[] = array('nombre' => 'Almacenaje', 'sugerido' => $totales['fact_almacenaje'], 'categoria' => 'fact_almacenaje');
     }
     
-    // Almacenaje - contenedores ingresados entre fecha_inicio y fecha_final
+    // Remociones
     if (in_array('fact_movimientos',$flags))
     {
+        // CASE t0.motivo WHEN "remocion" THEN CONCAT( x2, "-", y2, "-", t0.nivel ) WHEN "estiba" THEN "Recepción" WHEN "desestiba" THEN "Despacho" END AS "posicion",
+        // CONCAT(COUNT(*), " @ $", IF( t3.cobro =20, t4.`p_estiba_20` , t4.`p_estiba_40` )) AS "estibas", CONCAT(COUNT(*)," @ $", IF( t3.cobro =20, t4.`p_embarque_desestiba_20` , t4.`p_embarque_desestiba_40` )) AS "desestibas",
+        
+        $estibas = ' SUM(CASE t0.motivo WHEN "remocion" THEN (1*t4.`multiplicador_remociones`) WHEN "estiba" THEN 1 WHEN "desestiba" THEN 0 END) ';
+        $desestibas = ' SUM(CASE t0.motivo WHEN "remocion" THEN (1*t4.`multiplicador_remociones`) WHEN "estiba" THEN 0 WHEN "desestiba" THEN 1 END) ';
         $c = '
-        SELECT CONCAT( x2, "-", y2, "-", t0.nivel ) AS "Posición", `codigo_contenedor` AS "Código contenedor", t3.`nombre` AS "Tipo de contenedor", CONCAT(COUNT(*), " @ $", IF( t3.cobro =20, t4.`p_estiba_20` , t4.`p_estiba_40` )) AS "Estibas", CONCAT(COUNT(*)," @ $", IF( t3.cobro =20, t4.`p_embarque_desestiba_20` , t4.`p_embarque_desestiba_40` )) AS "Desestibas", (COUNT(*)*2) AS "Total movimientos", ( (COUNT(*) * IF( t3.cobro =20, t4.`p_estiba_20` , t4.`p_estiba_40` )) + (COUNT(*) * IF( t3.cobro =20, t4.`p_embarque_desestiba_20` , t4.`p_embarque_desestiba_40` )) ) AS "Subtotal"
+        SELECT  CONCAT( x2, "-", y2, "-", t0.nivel ) AS "posicion", `codigo_contenedor`, t3.`tipo_contenedor`, '.$estibas.' AS "estibas", '.$desestibas.' AS "desestibas", ('.$estibas.' + '.$desestibas.') AS "total_movimientos", ( ('.$estibas.' * IF( t3.cobro =20, t4.`p_estiba_20` , t4.`p_estiba_40` )) + ('.$desestibas.' * IF( t3.cobro =20, t4.`p_embarque_desestiba_20` , t4.`p_embarque_desestiba_40` )) ) AS "subtotal"
         FROM `opsal_movimientos` AS t0
         LEFT JOIN `opsal_posicion` AS t2
         USING ( codigo_posicion )
@@ -51,20 +142,48 @@ function FacturarPeriodo($periodo_inicio, $periodo_final, $codigo_agencia, $flag
         LEFT JOIN `opsal_tipo_contenedores` AS t3
         USING ( tipo_contenedor )
         LEFT JOIN `opsal_tarifas` AS t4 ON t1.`codigo_agencia` = t4.`codigo_usuario`
-        WHERE t0.fechatiempo BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'"
-        GROUP BY t0.codigo_orden
-        ORDER BY  COUNT(*) DESC';
+        WHERE cobrar_a="'.$codigo_agencia.'" '.$where.'
+        GROUP BY t1.codigo_orden
+        ORDER BY  t1.codigo_contenedor DESC';
         $r = db_consultar($c);
-        $anexo .= '<h2>Cargos por Movimientos</h2>';
-        $anexo .= db_ui_tabla($r,'class="opsal_tabla_ancha  tabla-estandar opsal_tabla_borde_oscuro tabla-fuente-minima tabla-una-linea"');
+        $anexo .= '<h2>Cargos por remociones</h2>';
         
-        mysqli_data_seek($r,0);
+
+        $anexo .= '<div class="exportable" rel="Cargos por elaboración de condiciones">';
+        $anexo .= '<p>Cargos por remociones en <b>'.mysqli_num_rows($r).'</b> contenedores</p>';
+        $anexo .= '<p>Periodo de <b>'.$periodo_inicio . '</b> a <b>'.$periodo_final.'</p><br />';        
         
-        $totales['fact_movimientos'] = 0;
-        while ($f = mysqli_fetch_assoc($r))
+        $anexo .= '<table class="opsal_tabla_ancha tabla-estandar opsal_tabla_borde_oscuro tabla-una-linea">';
+
+        $anexo .= '
+        <thead><tr>
+        <th>No</th>
+        <th>Posición</th>
+        <th>Código contenedor</th>
+        <th>Tipo</th>
+        <th>Estibas</th>
+        <th>Desestibas</th>
+        <th>Cantidad</th>
+        <th>Subtotal</th>
+        <th>IVA</th>
+        <th>Total</th>
+        </tr></thead>';
+        
+        $total_iva = $total_siniva = 0;
+        $i = 1;
+        while ($f = db_fetch($r))
         {
-            $totales['fact_movimientos'] += $f['Subtotal'];
+            $anexo .= '<tr><td>'.$i.'</td><td>'.$f['posicion'].'</td><td>'.$f['codigo_contenedor'].'</td><td>'.$f['tipo_contenedor'].'</td><td>'.$f['estibas'].'</td><td>'.$f['desestibas'].'</td><td>'.$f['total_movimientos'].'</td><td>'.dinero($f['subtotal']).'</td><td>'.dinero($f['subtotal'] * 0.13).'</td><td>'.dinero($f['subtotal'] * 1.13).'</td></tr>';
+            $total_siniva += $f['subtotal'];
+            $total_iva += ($f['subtotal'] * 0.13);
+            $i++;
         }
+        $anexo .= '<tr><th colspan="7"></th><th>'.dinero($total_siniva).'</th><th>'.dinero($total_iva).'</th><th>'.dinero($total_iva + $total_siniva).'</th></tr>';
+        
+        $anexo .= '</table>';
+        $anexo .= '</div>';
+        
+        $totales['fact_movimientos'] = ($total_iva + $total_siniva);
         
         $anexo .= '<p>Cobro sugerido: $'.number_format($totales['fact_movimientos'],2,'.',',').'</p>';
         
@@ -73,18 +192,32 @@ function FacturarPeriodo($periodo_inicio, $periodo_final, $codigo_agencia, $flag
     
     if (in_array('fact_elaboracion_condicion',$flags))
     {
-        $c = 'SELECT codigo_contenedor AS "Código contenedor", tipo_contenedor AS "Tipo de contenedor", fecha_ingreso AS "Fecha", referencia_papel AS "No. de condición", t2.p_elaboracion_condiciones AS "Subtotal" FROM `opsal_condiciones` AS t1 LEFT JOIN `opsal_tarifas` AS t2 ON t1.codigo_agencia = t2.codigo_usuario WHERE fecha_ingreso BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY fecha_ingreso ASC';
+        $c = 'SELECT codigo_contenedor, tipo_contenedor, fecha_ingreso, referencia_papel, t2.p_elaboracion_condiciones AS "subtotal" FROM `opsal_condiciones` AS t1 LEFT JOIN `opsal_tarifas` AS t2 ON t1.codigo_agencia = t2.codigo_usuario WHERE DATE(fecha_ingreso) BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY fecha_ingreso ASC';
         $r = db_consultar($c);
-        $anexo .= '<h2>Cargos por elaboración de condiciones</h2>';        
-        $anexo .= db_ui_tabla($r,'class="opsal_tabla_ancha  tabla-estandar opsal_tabla_borde_oscuro tabla-fuente-minima tabla-una-linea"');
+        $i = 1;
+        $total_siniva = 0;
+        $total_iva = 0;
         
-        mysqli_data_seek($r,0);
+        $anexo .= '<h2>Elaboración de condiciones</h2>';
         
-        $totales['fact_elaboracion_condicion'] = 0;
-        while ($f = mysqli_fetch_assoc($r))
+        $anexo .= '<div class="exportable" rel="Cargos por elaboración de condiciones">';
+        $anexo .= '<p>Elaboración de <b>'.mysqli_num_rows($r).'</b> condiciones</p>';
+        $anexo .= '<p>Periodo de <b>'.$periodo_inicio . '</b> a <b>'.$periodo_final.'</p><br />';        
+        
+        $anexo .= '<table class="opsal_tabla_ancha tabla-estandar opsal_tabla_borde_oscuro tabla-una-linea">';
+        $anexo .= '<tr><th>No</th><th>Código contenedor</th><th>Tipo de contenedor</th><th>Fecha</th><th>No. de condición</th><th>Subtotal</th><th>IVA</th><th>Total</th></tr>';
+        while ($f = db_fetch($r))
         {
-            $totales['fact_elaboracion_condicion'] += $f['Subtotal'];
+            $anexo .= '<tr><td>'.$i.'</td><td>'.$f['codigo_contenedor'].'</td><td>'.$f['tipo_contenedor'].'</td><td>'.$f['fecha_ingreso'].'</td><td>'.$f['referencia_papel'].'</td><td>'.dinero($f['subtotal']).'</td><td>'.dinero($f['subtotal'] * 0.13).'</td><td>'.dinero($f['subtotal'] * 1.13).'</td></tr>';
+            $total_siniva += $f['subtotal'];
+            $total_iva += ($f['subtotal'] * 0.13);
+            $i++;
         }
+        $anexo .= '<tr><th colspan="5"></th><th>'.dinero($total_siniva).'</th><th>'.dinero($total_iva).'</th><th>'.dinero($total_iva + $total_siniva).'</th></tr>';
+        $anexo .= '</table>';
+        $anexo .= '</div>';
+        
+        $totales['fact_elaboracion_condicion'] = ($total_iva + $total_siniva);
         
         $anexo .= '<p>Cobro sugerido: $'.number_format($totales['fact_elaboracion_condicion'],2,'.',',').'</p>';
         
@@ -93,7 +226,7 @@ function FacturarPeriodo($periodo_inicio, $periodo_final, $codigo_agencia, $flag
 
     if (in_array('fact_lineas_amarre',$flags))
     {
-        $c = 'SELECT ID_buque AS "Buque", tiempo_operacion AS "Horas de operación", fecha_ingreso "Ingreso", @dias_patio := DATEDIFF( NOW() , `fecha_ingreso` ) AS "Días en patio totales",  @dias_en_patio := DATEDIFF( COALESCE(`fecha_egreso`, "'.$periodo_final.'" ), GREATEST (`fecha_ingreso`, "'.$periodo_inicio.'")) AS "Días tomados", p_lineas_amarre_manejo AS "Costo manejo", p_lineas_amarre_almacenaje AS "Costo almacenaje", ((@dias_patio * p_lineas_amarre_almacenaje)+(p_lineas_amarre_manejo*tiempo_operacion)) AS "Subtotal" FROM opsal_lineas_amarre LEFT JOIN opsal_tarifas ON codigo_agencia=codigo_usuario WHERE fecha_ingreso < "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY  `fecha_ingreso` ASC';
+        $c = 'SELECT ID_buque AS "Buque", fecha_ingreso "Ingreso", @dias_patio := DATEDIFF( NOW() , `fecha_ingreso` ) AS "Días en patio totales",  @dias_en_patio := DATEDIFF( COALESCE(`fecha_egreso`, "'.$periodo_final.'" ), GREATEST (`fecha_ingreso`, "'.$periodo_inicio.'")) AS "Días tomados", p_lineas_amarre_manejo AS "Costo manejo", p_lineas_amarre_almacenaje AS "Costo almacenaje", ((@dias_patio * p_lineas_amarre_almacenaje)+(p_lineas_amarre_manejo*tiempo_operacion)) AS "Subtotal" FROM opsal_lineas_amarre LEFT JOIN opsal_tarifas ON codigo_agencia=codigo_usuario WHERE fecha_ingreso < "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY  `fecha_ingreso` ASC';
         $r = db_consultar($c);
         $anexo .= '<h2>Cargos por almacenamiento de líneas de amarre</h2>';
         $anexo .= db_ui_tabla($r,'class="opsal_tabla_ancha  tabla-estandar opsal_tabla_borde_oscuro tabla-fuente-minima tabla-una-linea"');
@@ -113,9 +246,10 @@ function FacturarPeriodo($periodo_inicio, $periodo_final, $codigo_agencia, $flag
     
     if (in_array('fact_carga_descarga',$flags))
     {
-        $c = 'SELECT `referencia_papel`, `fecha_ingreso` AS "Fecha", `inicio_operacion` AS "Inicio operación", `final_operacion` AS "Final operación", @duracion :=   FORMAT((time_to_sec(timediff(`final_operacion`,`inicio_operacion`)) / 3600),2) AS "Duración (h) de operación", FORMAT((@duracion*p_supervision_carga_descarga),2) AS "Subtotal" FROM opsal_carga_descarga LEFT JOIN opsal_tarifas ON codigo_agencia=codigo_usuario WHERE fecha_ingreso < "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY  `fecha_ingreso` ASC';
+        $c = 'SELECT `ID_buque`, `inicio_operacion` AS "Inicio operación", `final_operacion` AS "Final operación", @duracion :=   FORMAT((time_to_sec(timediff(`final_operacion`,`inicio_operacion`)) / 3600),2) AS "Duración (h) de operación", FORMAT((@duracion*p_supervision_carga_descarga),2) AS "Subtotal" FROM opsal_carga_descarga LEFT JOIN opsal_tarifas ON codigo_agencia=codigo_usuario WHERE DATE(fecha_ingreso) BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY  `fecha_ingreso` ASC';
         $r = db_consultar($c);
-        $anexo .= '<h2>Cargos por almacenamiento de líneas de amarre</h2>';
+        
+        $anexo .= '<h2>Supervisión de carga y descarga</h2>';
         $anexo .= db_ui_tabla($r,'class="opsal_tabla_ancha  tabla-estandar opsal_tabla_borde_oscuro tabla-fuente-minima tabla-una-linea"');
         
         mysqli_data_seek($r,0);
@@ -408,4 +542,11 @@ function protegerme($solo_salir=false,$niveles=array())
     exit;
 }
 
+function ellipsis($text, $max=100, $append='&hellip;')
+{
+    if (strlen($text) <= $max) return $text;
+    $out = substr($text,0,$max);
+    if (strpos($text,' ') === FALSE) return $out.$append;
+    return preg_replace('/\w+$/','',$out).$append;
+}
 ?>

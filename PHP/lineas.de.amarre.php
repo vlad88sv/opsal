@@ -13,7 +13,7 @@ if (mysqli_num_rows($r) > 0)
 
 if (isset($_POST['guardar']))
 {
-    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_agencia', 'ID_buque', 'tiempo_operacion', 'notas')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_agencia', 'ID_buque', 'numero_lineas', 'notas', 'inicio_operacion', 'final_operacion')));
     $DATOS['ingresado_por'] = _F_usuario_cache('codigo_usuario');
     
     if (db_agregar_datos('opsal_lineas_amarre',$DATOS) > 0)
@@ -37,25 +37,14 @@ if (isset($_POST['guardar']))
         </tr>
         
         <tr>
-            <td>Tiempo utilizado para la operación</td>
-            <td>
-                <select id="tiempo_operacion" name="tiempo_operacion">
-                    <option value="">Seleccione una opción</option>
-                    <option value="0.5">30 Minutos</option>
-                    <option value="0.75">45 Minutos</option>
-                    <option value="1.00">1 Horas</option>
-                    <option value="2.00">2 Horas</option>
-                    <option value="3.00">3 Horas</option>
-                    <option value="4.00">4 Horas</option>
-                    <option value="5.00">5 Horas</option>
-                    <option value="6.00">6 Horas</option>
-                    <option value="7.00">7 Horas</option>
-                    <option value="8.00">8 Horas</option>
-                    <option value="9.00">9 Horas</option>
-                    <option value="10.00">10 Horas</option>
-                </select>
-            </td>
+            <td>Número de lineas</td><td><input type="text" id="numero_lineas" name="numero_lineas"/></td>
         </tr>
+
+        <tr>
+            <td>Inicio de operación</td><td><input class="timepicker" type="text" id="inicio_operacion" name="inicio_operacion"/></td>
+        </tr>
+        <tr>
+            <td>Fin de operación</td><td><input class="timepicker" type="text" id="final_operacion" name="final_operacion"/></td>
         
         <tr>
             <td>Notas de la operación</td><td><textarea name="notas"></textarea></td>
@@ -76,9 +65,6 @@ t1.`ID_buque`,
 t1.`ID_linea_amarre`,
 t1.`ingresado_por`,
 t1.`notas`,
-t1.`gastos_adicionales`,
-t1.`tarifa_por_hora`,
-t1.`tiempo_operacion`,
 t2.`usuario` AS "nombre_operador",
 t3.`usuario` AS "nombre_agencia"
 FROM `opsal`.`opsal_lineas_amarre` AS t1
@@ -105,30 +91,22 @@ if (mysqli_num_rows($resultado) == 0)
 <div class="opsal_burbuja">
     <?php echo $ultimos_ingresos; ?>
 </div>
-<script type="text/javascript">    
-    $('#form_lineas_amarre').submit(function () {        
-        if ($("select#codigo_agencia option:selected").val() == "")
-        {
-            alert ("Seleccione una agencia.");
-            return false;
-        }
+<script type="text/javascript">
+    $(function(){
+        $('#form_lineas_amarre').submit(function () {        
+            if ($("select#codigo_agencia option:selected").val() == "")
+            {
+                alert ("Seleccione una agencia.");
+                return false;
+            }
+            
+            if ($("#ID_buque").val() == "")
+            {
+                alert ("Ingrese el número del buque.");
+                return false;
+            }
+        });
         
-        if ($("#ID_buque").val() == "")
-        {
-            alert ("Ingrese el número del buque.");
-            return false;
-        }
-        
-        if ($("select#tiempo_operacion option:selected").val() == "")
-        {
-            alert ("Seleccione un tiempo de operación.");
-            return false;
-        }
-      
-        if ($("#gastos_adicionales").val() == "")
-        {
-            alert ("Ingrese gastos adicionales o 0.00.");
-            return false;
-        }
+        $('.timepicker').datetimepicker({dateFormat: 'yy-mm-dd', constrainInput: true, timeFormat: 'hh:mm:ss', defaultDate: +0}).datetimepicker('setDate', new Date());
     });
 </script>

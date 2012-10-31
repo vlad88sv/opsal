@@ -41,6 +41,7 @@ if (isset($_POST['guardar']))
         $DATOS['cobrar_a'] = $codigo_agencia;
         $DATOS['codigo_orden'] = $codigo_orden;
         $DATOS['cheque'] = $_POST['cheque'];
+        $DATOS['fechatiempo'] = $_POST['fechatiempo'];
         $DATOS['nivel'] = $_POST['posicion_nivel'];
         $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');
         $DATOS['motivo'] = 'remocion';

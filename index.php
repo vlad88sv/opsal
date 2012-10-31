@@ -77,7 +77,13 @@ ob_start();
     <link href="favicon.ico" rel="icon" type="image/x-icon" />
     <link rel="canonical" href="<?php echo PROY_URL_ACTUAL; ?>" />
     <style type='text/css'>
-        @media print { .noimprimir { display:none; } table { page-break-inside:avoid; margin: 10px 0; } }
+        @media print {
+            .noimprimir { display:none; }
+            table { page-break-inside:avoid; margin: 10px 0; }
+            a {color: black; font-style: normal; text-decoration: none; }
+            .exportable_ctrl { display: none; }
+ 
+        }
         @media screen { .soloimpresion { display:none; } }
     </style>
 <?php

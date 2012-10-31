@@ -81,7 +81,8 @@ if (mysqli_num_rows($r) > 0)
         <tr><td>Tara (lbs)</td><td><input type="text" value="" id="tara" name="tara" /></td></tr>
         <tr><td>Chasis</td><td><input type="text" value="" id="chasis" name="chasis" /></td></tr>
         <tr><td>Cliente</td><td><input type="text" value="" id="cliente_ingreso" name="cliente_ingreso" /></td></tr>
-        <tr><td>Transportista</td><td><input type="text" value="" id="transportista_ingreso" name="transportista_ingreso" /></td></tr>
+        <tr><td>Transporte</td><td><input type="text" value="" id="transportista_ingreso" name="transportista_ingreso" /></td></tr>
+        <tr><td>Chofer</td><td><input type="text" value="" id="chofer_ingreso" name="chofer_ingreso" /></td></tr>
         <tr><td>Buque</td><td><input type="text" value="" id="buque_ingreso" name="buque_ingreso" /></td></tr>
         
         <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque_ingreso" /></td></tr>
@@ -195,11 +196,15 @@ if (mysqli_num_rows($r) > 0)
                 return false;
             }
             
+
+            // NYK y Medit
+            /*
             if ($("#cepa_salida").val() == "")
             {
                 alert ("Ingrese la fecha de ingreso de CEPA.");
                 return false;
-            }            
+            }
+            */
 
             if ($("#arivu_ingreso").val() == "")
             {
@@ -207,23 +212,29 @@ if (mysqli_num_rows($r) > 0)
                 return false;
             }
 
+            // MSC
+            /*
             if ($("#arivu_referencia").val() == "")
             {
                 alert ("Verifique número de referencia de ARIVU ingresado.");
                 return false;
             }
+            */
             
             $("#indicador_de_envio").html('<img src="/IMG/general/cargando.gif" />');
             
             $("#ingresar_contenedor").attr('disabled','disabled');
             
             //$("#contenedor_mapa").html('<p>Guardando datos...</p><br /><img src="/IMG/general/cargando.gif" />');
+            
             $("#contenedor_visual").css('left',0).css('top',0).css('height',0).css('width',0);
             
             $.post('ajax.ingreso.php',$('#frm_ingreso_contenedores').serialize(),function (){
                 iniciar_mapa();
                 $('#frm_ingreso_contenedores')[0].reset();
             });
+            
+            return false;
         });
         
         $("#contenedor_mapa").bind('mapa_iniciado',function(){
@@ -285,6 +296,18 @@ if (mysqli_num_rows($r) > 0)
             $('#opsal_mapa #contenedor_mapa table td[col="'+$('#posicion_columna').val()+'"][fila="'+$('#posicion_fila').val()+'"]').trigger('click');
         });
         
+        $("#codigo_contenedor").blur(function(){
+            // Verifiquemos que no este doble-ingresando este contenedor.
+            if (/[\D]{4}\d{7}/.test($("#codigo_contenedor").val())) {
+                $("#codigo_contenedor").val($("#codigo_contenedor").val().toUpperCase());
+                $.post('ajax.seguro.php',{accion : 'verificar_doble_ingreso', contenedor : $("#codigo_contenedor").val()}, function(data){
+                    if (data.cantidad > 0)
+                    {
+                        alert ("ERROR: parece que este contenedor ya esta ingresado en el patio.\nUtilice la opción de búsqueda para verificarlo");
+                    }
+                },'json');
+            }
+        });
 
     });
 </script>

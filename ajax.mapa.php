@@ -133,7 +133,7 @@ if (mysqli_num_rows($r_ordenes) > 0)
 //******** Filtro
 if (isset($_POST['filtrar']))
 {
-    $limite = '';
+    $rango = $limite = '';
     $tfiltros = array();
     $trango = array();
     
@@ -147,14 +147,24 @@ if (isset($_POST['filtrar']))
         $tfiltros[] = 'AND clase IN ("'.join('","',$_POST['clase']).'")';
     }
 
-    if (isset($_POST['tamano_contenedor']) && isset($_POST['tipo_contenedor']))
+    
+    if (!empty($_POST['nivel']))
+    {
+        $tfiltros[] = 'AND nivel = "'.$_POST['nivel'].'"';
+    }
+    
+    if (!empty($_POST['tamano_contenedor']) && !empty($_POST['tipo_contenedor']))
     {
         $tfiltros[] = 'AND tipo_contenedor = "'.$_POST['tipo_contenedor'].$_POST['tamano_contenedor'].'"';
     }
+        
     
-    $rango = ' AND t3.x BETWEEN (SELECT x FROM opsal_posicion WHERE x2 = "'.$_POST['rango_final_col'].'" LIMIT 1) AND (SELECT x FROM opsal_posicion WHERE x2 = "'.$_POST['rango_inicio_col'].'" LIMIT 1)';
+    if (!empty($_POST['rango_inicio_col']) && !empty($_POST['rango_inicio_fila']) && !empty($_POST['rango_final_col']) && !empty($_POST['rango_final_col']))
+    {
+        $rango = ' AND t3.x BETWEEN (SELECT x FROM opsal_posicion WHERE x2 = "'.$_POST['rango_final_col'].'" LIMIT 1) AND (SELECT x FROM opsal_posicion WHERE x2 = "'.$_POST['rango_inicio_col'].'" LIMIT 1)';
     
-    $rango .= ' AND t3.y BETWEEN (SELECT y FROM opsal_posicion WHERE y2 = "'.$_POST['rango_final_fila'].'" LIMIT 1) AND (SELECT y FROM opsal_posicion WHERE y2 = "'.$_POST['rango_inicio_fila'].'" LIMIT 1)';
+        $rango .= ' AND t3.y BETWEEN (SELECT y FROM opsal_posicion WHERE y2 = "'.$_POST['rango_final_fila'].'" LIMIT 1) AND (SELECT y FROM opsal_posicion WHERE y2 = "'.$_POST['rango_inicio_fila'].'" LIMIT 1)';
+    }
     
     if (isset($_POST['limite']) && is_numeric($_POST['limite']))
     {
@@ -164,9 +174,9 @@ if (isset($_POST['filtrar']))
     
     $filtros = join(' ', $tfiltros);
     
-    $x2_order = ($_POST['direccion'] == 'izquierda' ? 'DESC' : 'ASC');
+    $x2_order = (@$_POST['direccion'] == 'izquierda' ? 'DESC' : 'ASC');
     
-    $orden_salida = ($_POST['orden_salida'] == 'fila' ? "t3.`y2`+0 ASC, t3.`x2` $x2_order" : "t3.`x2` $x2_order, t3.`y2`+0 ASC");
+    $orden_salida = (@$_POST['orden_salida'] == 'fila' ? "t3.`y2`+0 ASC, t3.`x2` $x2_order" : "t3.`x2` $x2_order, t3.`y2`+0 ASC");
     
     
     $c_ordenes = "
@@ -200,29 +210,29 @@ if (isset($_POST['filtrar']))
             {
                 case '20':
                     $xy = $f_ordenes['x'].'.'.$f_ordenes['y'];
-                    $mapa[$xy]['filtrado'] = 1;
+                    if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     $mapa[$xy]['texto'] = (empty($mapa[$xy]['texto'])? 1 : $mapa[$xy]['texto'] + 1);
                     break;
                 
                 case '40':
                     $xy = $f_ordenes['x'].'.'.$f_ordenes['y'];
-                    $mapa[$xy]['filtrado'] = 1;
+                    if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     $mapa[$xy]['texto'] = (empty($mapa[$xy]['texto'])? 1 : $mapa[$xy]['texto'] + 1);
                     
                     $xy = $f_ordenes['x'].'.'.($f_ordenes['y']+1);
-                    $mapa[$xy]['filtrado'] = 1;
+                    if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     break;
                     
                 case '60':
                     $xy = $f_ordenes['x'].'.'.$f_ordenes['y'];
-                    $mapa[$xy]['filtrado'] = 1;
+                    if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     $mapa[$xy]['texto'] = (empty($mapa[$xy]['texto'])? 1 : $mapa[$xy]['texto'] + 1);
                     
                     $xy = $f_ordenes['x'].'.'.($f_ordenes['y']+1);
-                    $mapa[$xy]['filtrado'] = 1;
+                    if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
     
                     $xy = $f_ordenes['x'].'.'.($f_ordenes['y']+2);
-                    $mapa[$xy]['filtrado'] = 1;                    
+                    if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;                    
                     break;
             }
         }
@@ -251,10 +261,14 @@ for ($y=36; $y > 0; $y--)
         
         $y3 = (($y2+1) % 4 == 0 ? ($y2 - 1) : ($y2 + 1));        
         
-        $title = '
+        $qtip = $title = '
         <b>'.$x2.$y2.'</b> parte de <b>'.$x2.$y3.'</b><br />'.
         'Tipo: '. ucfirst($mapa[$xy]['tipo']).' / '.$mapa[$xy]['nombre']
         ;        
+        
+        
+        
+
         
         if (@is_array($mapa[$xy]['datos'])) {
             $nivel = max(array_keys($mapa[$xy]['datos']));
@@ -264,18 +278,39 @@ for ($y=36; $y > 0; $y--)
             krsort($mapa[$xy]['datos'],SORT_NUMERIC);
             
             foreach($mapa[$xy]['datos'] as $kNivel => $vDatos)
-            {                
+            {
+                $cepa_salida = ($mapa[$xy]['datos'][$kNivel]['cepa_salida'] ? $mapa[$xy]['datos'][$kNivel]['cepa_salida'].' ['.$mapa[$xy]['datos'][$kNivel]['dias_cepa'].' días desde salida de CEPA]' : 'Sin datos');
+                $arivu_ingreso = ($mapa[$xy]['datos'][$kNivel]['dias_arivu'] ? $mapa[$xy]['datos'][$kNivel]['arivu_ingreso'].' ['.$mapa[$xy]['datos'][$kNivel]['dias_arivu'].' días desde el ingreso]' : 'Sin datos');
+                
                 $title .= '<hr /><p>';
                 $title .= '<b>#'.$kNivel.'</b> - <b>'.$mapa[$xy]['datos'][$kNivel]['nombre'].'</b> Clase <b>'.$mapa[$xy]['datos'][$kNivel]['clase'].'</b><br />';
                 $title .= 'Ingreso: <b>'.$mapa[$xy]['datos'][$kNivel]['fechatiempo_ingreso'].'</b> <b>['.$mapa[$xy]['datos'][$kNivel]['dias_ingreso'].' días]</b><br />';
-                $title .= 'ARIVU: <b>'.$mapa[$xy]['datos'][$kNivel]['arivu_ingreso'].'</b> <b>['.$mapa[$xy]['datos'][$kNivel]['dias_arivu'].' días]</b><br />';
-                $title .= 'CEPA: <b>'.$mapa[$xy]['datos'][$kNivel]['cepa_salida'].'</b> <b>['.$mapa[$xy]['datos'][$kNivel]['dias_cepa'].' días]</b><br />';
+                $title .= 'ARIVU: <b>'.$arivu_ingreso.'</b><br />';
+                $title .= 'CEPA: <b>'.$cepa_salida.'</b><br />';
                 $title .= 'Agencia: <b>'.$mapa[$xy]['datos'][$kNivel]['nombre_agencia'].'</b><br />';
-                $title .= 'Contenedor: <b>'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'</b>';
+                $title .= 'Contenedor: <a href="#" rel="'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'" class="ejecutar_busqueda_codigo_contenedor"><b>'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'</b></a> <a  href="#" class="bq_usar_contenedor" col="'.$x2.'" fila="'.$y.'" nivel="'.$kNivel.'">[ Utilizar posición en vista acual ]</a>';
                 $title .= '</p>';
             }
         }
-                
+  
+        if (@is_array($mapa[$xy]['datos'])) {
+            $nivel = max(array_keys($mapa[$xy]['datos']));
+            
+            $qtip .= ' / <b>' . $nivel . '</b> estiba(s)';
+        
+            krsort($mapa[$xy]['datos'],SORT_NUMERIC);
+            
+            foreach($mapa[$xy]['datos'] as $kNivel => $vDatos)
+            {
+                $qtip .= '<div style="padding-top:5px;">';
+                $qtip .= '<b>#'.$kNivel.'</b> - <b>'.$mapa[$xy]['datos'][$kNivel]['nombre_agencia'].'</b> - <b>'.$mapa[$xy]['datos'][$kNivel]['nombre'].'</b> Clase <b>'.$mapa[$xy]['datos'][$kNivel]['clase'].'</b><br />';
+                $qtip .= '<table class="tabla-estandar opsal_tabla_ancha opsal_tabla_borde_oscuro">';
+                $qtip .= '<tr><td>Ingreso</td><td>'.$mapa[$xy]['datos'][$kNivel]['fechatiempo_ingreso'].'</b> <b>['.$mapa[$xy]['datos'][$kNivel]['dias_ingreso'].' días]</td></tr>';
+                $qtip .= '<tr><td>Contenedor</td><td>'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'</td></tr>';
+                $qtip .= '</table>';
+                $qtip .= '</div>';
+            }
+        }              
         
         $clases_especiales = ' ';
         
@@ -294,7 +329,7 @@ for ($y=36; $y > 0; $y--)
         $grupo = (!empty($mapa[$xy]['grupo']) ? $mapa[$xy]['grupo'] : '');    
         
         
-        $buffer .= '<td id="'.$x.'_'.$y.'" grupo="'.$grupo.'" visual="'.@$mapa[$xy]['visual'].'" afinidad="'.$mapa[$xy]['afinidad'].'" x="'.$x.'" y="'.$y.'" col="'.$x2.'" fila="'.$y2.'" nivel="'.$nivel.'" tooltip="'.htmlspecialchars($title).'" class="contenedor_mapa_casilla_'.$tipo.' '.$clases_especiales.' contenedor_mapa_casilla_estiba_'.$nivel.'">'.$mapa[$xy]['texto'].'</td>';
+        $buffer .= '<td id="'.$x.'_'.$y.'" grupo="'.$grupo.'" visual="'.@$mapa[$xy]['visual'].'" afinidad="'.$mapa[$xy]['afinidad'].'" x="'.$x.'" y="'.$y.'" col="'.$x2.'" fila="'.$y2.'" nivel="'.$nivel.'" qtip="'.htmlspecialchars($qtip).'" tooltip="'.htmlspecialchars($title).'" class="contenedor_mapa_casilla_'.$tipo.' '.$clases_especiales.' contenedor_mapa_casilla_estiba_'.$nivel.'">'.$mapa[$xy]['texto'].'</td>';
     }
     $buffer .= '</tr>';
 }

@@ -27,7 +27,12 @@ if (mysqli_num_rows($r) > 0)
         </td></tr>
         <tr><td>Tipo</td><td>
         <div id="tamano_contenedor" style="text-align: center;line-height: 30px;">
-        <input rel="20" type="radio" name="tamano_contenedor" id="clase_20" checked="checked" value="20"/>
+        <input rel="" type="radio" name="tamano_contenedor" id="clase_cualquiera" checked="checked" value=""/>
+        <label for="clase_cualquiera">Cualquier tipo</label>&nbsp;
+        
+        <br />
+        
+        <input rel="20" type="radio" name="tamano_contenedor" id="clase_20" value="20"/>
         <label for="clase_20">20</label>&nbsp;
         
         <input rel="40" type="radio" name="tamano_contenedor" id="clase_40" value="40"/>

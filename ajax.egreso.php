@@ -6,8 +6,9 @@ require_once (__PHPDIR__."vital.php");
 if (isset($_POST['guardar']))
 {
     $codigo_orden = $_POST['codigo_orden'];
+    $codigo_agencia = db_obtener('opsal_ordenes','codigo_agencia','codigo_orden="'.$codigo_orden.'"');
     
-    $DATOS = array_intersect_key($_POST,array_flip(array('cheque_egreso','chasis_egreso','transportista_egreso','buque_egreso','observaciones_egreso','fechatiempo_egreso','destino','eir_egreso')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('cheque_egreso','chasis_egreso','transportista_egreso','buque_egreso','observaciones_egreso','fechatiempo_egreso','destino','eir_egreso','chofer_egreso','tipo_salida')));
     $DATOS['estado'] = 'fuera';
     $DATOS['egresado_por'] = _F_usuario_cache('codigo_usuario');
     
@@ -16,11 +17,12 @@ if (isset($_POST['guardar']))
     unset($DATOS);
     $DATOS['codigo_posicion'] = 0;
     $DATOS['nivel'] = 0;
+    $datos['cobrar_a'] = 0;
     $DATOS['motivo'] = 'desestiba';
     $DATOS['fechatiempo'] = $_POST['fechatiempo_egreso'];
     $DATOS['codigo_orden'] = $codigo_orden;
     $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');
-    $DATOS['codigo_cheque'] = $_POST['cheque_egreso'];
+    $DATOS['cheque'] = $_POST['cheque_egreso'];
     
     db_agregar_datos('opsal_movimientos',$DATOS);
     

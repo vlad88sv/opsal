@@ -18,14 +18,20 @@ body
 
 input[type=text],input[type=password],select,textarea
 {
-  background-color:#FAFFBD;
-  border:1px solid #000;
-  color:#000;
+  background: url("jquery.ui/images/ui-bg_gloss-wave_70_ffdd57_500x100.png") repeat-x scroll 50% 50% #FECE2F;
+  border: 1px solid #D19405;
+  color: #4C3000;
   font-size:10px;
   outline-color:currentColor;
   outline-style:none;
   outline-width:medium;
   padding:1px;
+}
+
+input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus
+{
+  background: url("jquery.ui/images/ui-bg_gloss-wave_60_fece2f_500x100.png") repeat-x scroll 50% 50% #FECE2F;
+  border-color: #A45B13;
 }
 
 .boton, input[type=submit], input[type=button]{
@@ -126,7 +132,7 @@ img
 a
 {
   border:none;
-  color:#28CC7A;
+  color:#2531DB;
   text-decoration:none;
 }
 
@@ -155,9 +161,15 @@ table.tabla-estandar
 table.tabla-estandar td
 {
   background-color:#eee8e8;
-  padding:3px 10px;
+  padding:2px 4px;
   text-align:left;
   vertical-align:top;
+}
+
+table.horizontal th
+{
+  text-align: right;
+  padding-right: 5px;
 }
 
 table.tabla-fuente-minima td
@@ -205,7 +217,15 @@ table.tabla-una-linea td
 
 ul.dropdown
 {
-  background-color:#1b7b7a;
+  background: #bfd255;
+  background: -moz-linear-gradient(top,  #bfd255 0%, #8eb92a 50%, #72aa00 51%, #9ecb2d 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#bfd255), color-stop(50%,#8eb92a), color-stop(51%,#72aa00), color-stop(100%,#9ecb2d));
+  background: -webkit-linear-gradient(top,  #bfd255 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  background: -o-linear-gradient(top,  #bfd255 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  background: -ms-linear-gradient(top,  #bfd255 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  background: linear-gradient(to bottom,  #bfd255 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bfd255', endColorstr='#9ecb2d',GradientType=0 );
+
   display:inline-block;
   height:26px;
   line-height:26px;
@@ -229,7 +249,15 @@ ul.dropdown li
 
 ul.dropdown li.hover,ul.dropdown li:hover
 {
-  background-color:#28CC7A;
+  background: #D2E082;
+  background: -moz-linear-gradient(top,  #D2E082 0%, #8eb92a 50%, #72aa00 51%, #9ecb2d 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D2E082), color-stop(50%,#8eb92a), color-stop(51%,#72aa00), color-stop(100%,#9ecb2d));
+  background: -webkit-linear-gradient(top,  #D2E082 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  background: -o-linear-gradient(top,  #D2E082 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  background: -ms-linear-gradient(top,  #D2E082 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  background: linear-gradient(to bottom,  #D2E082 0%,#8eb92a 50%,#72aa00 51%,#9ecb2d 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#D2E082', endColorstr='#9ecb2d',GradientType=0 );
+  
   cursor:default;
   position:relative;
   z-index:599;
@@ -237,7 +265,7 @@ ul.dropdown li.hover,ul.dropdown li:hover
 
 ul.dropdown li a
 {
-  color:#FFF;
+  color: #282828;
   font-weight:bold;
   display:block;
   font-family:Arial;
@@ -285,9 +313,7 @@ ul.dropdown form.busqueda_ventas #busqueda_ventas
 ul.dropdown li ul
 {
   background-color:#EFEFEF;
-  border-bottom:1px solid #000;
-  border-left:1px solid #000;
-  border-right:1px solid #000;
+  border:1px solid #000;
   left:0;
   padding:7px 0;
   position:absolute;
@@ -406,7 +432,7 @@ table.opsal_tabla_espaciosa
 
 a.opsal_pestaña
 {
-  background-color:#feaa36;
+  background: url("jquery.ui/images/ui-bg_gloss-wave_60_fece2f_500x100.png") repeat-x scroll 50% 50% #FECE2F;
   min-width:120px;
   max-width:240px;
   height:24px;
@@ -421,12 +447,15 @@ a.opsal_pestaña
 
 a.opsal_pestaña_seleccionada
 {
-  background-color:#CCC;
+  background: url("jquery.ui/images/ui-bg_gloss-wave_70_ffdd57_500x100.png") repeat-x scroll 50% 50% #FECE2F;
+  border-color:#A45B13;
+  border-width: 1px 1px 0px;
+  border-style: solid;
 }
 
 a.opsal_pestaña:hover
 {
- background-color:#efa033;   
+  background: url("jquery.ui/images/ui-bg_gloss-wave_70_ffdd57_500x100.png") repeat-x scroll 50% 50% #FECE2F;
 }
 
 form#opsal_inicio
@@ -616,4 +645,23 @@ table#opsal_regla_lateral td {
 table.opsal_tabla_letra_pequena
 {
   font-size: 0.8em;
+}
+
+@media screen { 
+  .exportable
+  {
+    border: 1px dashed #C4C4C4;
+  }
+  
+  .exportable_vivo
+  {
+    border: 1px dashed red;
+  }
+  
+  .exportable_ctrl
+  {
+    float:right;
+    top: -50px;
+    z-index: 5;
+  }
 }

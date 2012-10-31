@@ -18,6 +18,8 @@ if (mysqli_num_rows($r) > 0)
         
         <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque" /></td></tr>
         
+        <tr><td>Fecha</td><td><input type="text" class="calendariocontiempo" value="" name="fechatiempo" /></td></tr>
+        
         <tr>
             <td>Posición de contenedor</td><td>
             <table id="drop_target" class="opsal_tabla_ancha tabla-estandar tabla-centrada">
