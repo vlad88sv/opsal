@@ -6,6 +6,7 @@
 <td><input type="text" id="traducir" style="width:50px" value="" /><input id="ejecutar_traduccion" type="button" value="->"  style="padding:0px" /><input type="text" id="traducido" style="width:50px" value="" /></td>
 <td style="text-align: right;">
 <?php if (S_iniciado()): ?>
+<img style="vertical-align: middle;" title="Imprimir esta vista" onclick="window.print()" src="/IMG/general/imprimir.gif" />
 <a class="boton" href="/finalizar.html">Cerrar Sesión</a>
 <?php endif; ?>
 </td>
@@ -27,18 +28,21 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
 	<li><a href="/control.patio.html" title="Control patio">Reporte de patio</a>
 	<li><a href="/control.ingresos.html" title="Control ingresos">Reporte recepciones </a>
 	<li><a href="/control.remociones.html" title="Control remociones">Reporte remociones</a>
-	    <li><a href="/control.embarques.html" title="Control embarques">Reporte embarques</a>
+	<li><a href="/control.embarques.html" title="Control embarques">Reporte embarques</a>
 	<li><a href="/control.salidas.html" title="Control salidas">Reporte despachos</a>
 	<!--<li><a href="/control.sinfacturar.html" title="Detector de periodos no facturados">Sin facturar</a>!-->
     </ul>
 </li>
 <li><a href="/elaboracion.de.condicion.html" title="Módulo de contenedores">E. Condición</a>
     <ul>
-	<li><a href="/control.elaboracion.de.condicion.html" title="Reporte de condiciones">Reporte de condiciones</a>
+	<li><a href="/control.elaboracion.de.condicion.html" title="Reporte de condiciones">Obtener reporte</a>
     </ul>
 </li>
-<li><a href="/supervision.carga.descarga.html" title="Supervisión de carga y descarga">Supervisión OPS C/D</a></li>
-<li><a href="/marchamos.html" title="Módulo de contenedores">Marchamos</a></li>
+<li><a href="/supervision.carga.descarga.html" title="Supervisión de carga y descarga">Supervisión OPS C/D</a>
+    <ul>
+	<li><a href="/control.supervision.carga.descarga.html" title="Reporte de supervisión de carga y descarga">Obtener reporte</a>
+    </ul>
+</li>
 <li><a href="/lineas.de.amarre.html" title="Módulo de contenedores">Líneas de amarre</a></li>
 <li><a href="/facturacion.html" title="Módulo de facturacion">Facturación</a>
     <ul>
@@ -48,7 +52,7 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
 </li>
 <li><a href="/administracion.html" title="Módulo de contenedores">Administrador</a>
     <ul>
-        <li><a href="/reportes.html" title="Reportes">Reportes</a>
+        <li><a href="/reportes.html" title="Reportes">Estadísticas</a>
 	<li><a href="/bitacora.html" title="Bitácora">Bitacora</a>
     </ul>
 </li>
@@ -84,7 +88,7 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
     
 	$('.exportable').live('mouseenter', function(){
 	    $(this).addClass('exportable_vivo');
-	    $(this).prepend('<div class="exportable_ctrl"><b style="color:red;">Exportar este repote:</b> <button class="exportar_pdf">PDF</button><button class="exportar_xls">EXCEL</button><button class="exportar_correo">CORREO</button></div>');
+	    $(this).prepend('<div class="exportable_ctrl"><b style="color:red;">Exportar este repote:</b> <button class="exportar_pdf">PDF</button><button class="exportar_xls">EXCEL</button><button class="exportar_doc">WORD</button><button class="exportar_correo">CORREO</button></div>');
 	});
 	
 	$('.exportable').live('mouseleave', function(){
@@ -100,6 +104,14 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
 	    $.download('/exportar.xls.php', 'archivo='+encodeURIComponent(exportable.attr('rel') || 'reporte')+'&data=' + data);
 	});
 
+	$('.exportable_ctrl .exportar_doc').live('click', function() {
+	    var exportable = $(this).parents('.exportable');
+	    exportable.find('.exportable_ctrl').remove();
+	    var data = encodeURIComponent(exportable.html());
+	    //console.log(data);
+	    $.download('/exportar.doc.php', 'archivo='+encodeURIComponent(exportable.attr('rel') || 'reporte')+'&data=' + data);
+	});
+	
 	$('.exportable_ctrl .exportar_pdf').live('click', function() {
 	    var exportable = $(this).parents('.exportable');
 	    exportable.find('.exportable_ctrl').remove();

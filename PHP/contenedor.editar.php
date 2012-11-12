@@ -16,7 +16,7 @@ if (isset($_POST['guardar']))
     
     db_actualizar_datos('opsal_ordenes',$DATOS,'codigo_orden="'.$_POST['codigo_orden'].'"');
     
-    registrar('Se ha editado un contenedor (ID: <b>'.$_POST['codigo_orden'].'</b>)','edicion.contenedor');
+    registrar('Se ha editado un contenedor (ID: <b>'.$_POST['codigo_orden'].'</b>)','edicion.contenedor',$_POST['codigo_orden']);
 }
 
 

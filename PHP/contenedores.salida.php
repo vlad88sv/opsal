@@ -32,11 +32,14 @@
             </td>
         </tr>
         
+        <tr><td>Fecha salida</td><td><input type="text" name="fechatiempo_egreso" id="fechatiempo_egreso" class="calendario" /></td></tr>
+        
         <tr>
             <td>No. EIR</td>
             <td><input type="text" value="" id="eir_egreso" name="eir_egreso" /></td>
         </tr>
         
+        <!--
         <tr>
             <td>Dirección salida</td>
             <td style="text-align:center;">
@@ -46,11 +49,12 @@
                 </div>
             </td>
         </tr>
+        !-->
         
         <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque_egreso" /></td></tr>
         <tr><td>Transporte</td><td><input type="text" id="transportista" name="transportista_egreso" /></td></tr>
         <tr><td>Chofer</td><td><input type="text" value="" id="chofer_egreso" name="chofer_egreso" /></td></tr>
-        <tr><td>Fecha salida</td><td><input type="text" name="fechatiempo_egreso" id="fechatiempo_egreso" class="calendario" /></td></tr>
+        
         <tr><td>Chasis</td><td><input type="text" value="" id="chasis" name="chasis_egreso" /></td></tr>
         <tr><td>Buque</td><td><input type="text" name="buque_egreso" id="buque_egreso" /></td></tr>
         <tr><td>Destino</td><td><input type="text" name="destino" id="destino" /></td></tr>
@@ -66,7 +70,23 @@
 <input type="hidden" name="guardar" value="guardar" />
 <input type="submit" id="realizar_salida" value="Realizar salida de contenedor" /> <span id="indicador_de_envio"></span>
 </form>
+<?php
+$r = db_consultar('SELECT buque_egreso FROM `opsal_ordenes` WHERE buque_egreso<>"" GROUP BY buque_egreso');
+$tagsBuque = array();
+while ($f = db_fetch($r)) $tagsBuque[] = $f['buque_egreso'];
 
+$r = db_consultar('SELECT cheque_egreso FROM `opsal_ordenes` WHERE cheque_egreso<>"" GROUP BY cheque_egreso');
+$tagsCheque = array();
+while ($f = db_fetch($r)) $tagsCheque[] = $f['cheque_egreso'];
+
+$r = db_consultar('SELECT transportista_egreso FROM `opsal_ordenes` WHERE transportista_ingreso<>"" GROUP BY transportista_egreso');
+$tagsTransportista = array();
+while ($f = db_fetch($r)) $tagsTransportista[] = $f['transportista_egreso'];
+
+$r = db_consultar('SELECT chofer_egreso FROM `opsal_ordenes` WHERE chofer_ingreso<>"" GROUP BY chofer_egreso');
+$tagsChofer = array();
+while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_egreso'];
+?>
 <script type="text/javascript">
     
     afectados = {};
@@ -144,8 +164,8 @@
             afectados.der = [];
             afectados.derCant = 0;
             
-            propagar_virus(grupo,'izq');
-            propagar_virus(grupo,'der');
+            //propagar_virus(grupo,'izq');
+            //propagar_virus(grupo,'der');
             
             console.log(afectados);
             
@@ -165,6 +185,12 @@
     $(function () {
         $( "#direccion" ).buttonset();
 
+        $( "#buque_egreso" ).autocomplete({source: ["<?php echo join('","', $tagsBuque) ;?>"]});
+        $( "#transportista" ).autocomplete({source: ["<?php echo join('","', $tagsTransportista) ;?>"]});
+        $( "#cheque" ).autocomplete({source: ["<?php echo join('","', $tagsCheque) ;?>"]});
+        $( "#chofer_egreso" ).autocomplete({source: ["<?php echo join('","', $tagsChofer) ;?>"]});
+
+        
         $('#frm_salida').submit(function(event){
             event.preventDefault();
             
@@ -306,6 +332,6 @@
             ejecutar_busqueda();
         });
         
-        $("fechatiempo_salida").datepicker({dateFormat: 'yy-mm-dd', constrainInput: true, defaultDate: +0}).datepicker('setDate', new Date());
+        $("fechatiempo_salida").datepicker({dateFormat: 'yy-mm-dd', constrainInput: true, defaultDate: +0, maxDate: +0}).datepicker('setDate', new Date());
     });
 </script>

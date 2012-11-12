@@ -1,6 +1,5 @@
 <?php
 session_start();
-$_SESSION['rnd'] = time();
 
 function _F_sesion_cerrar(){
    setcookie(session_name(), session_id(), 1, '/');

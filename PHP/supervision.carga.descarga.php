@@ -16,7 +16,7 @@ if (mysqli_num_rows($r) > 0)
 if (isset($_POST['guardar']))
 {
     
-    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_agencia', 'codigo_contenedor', 'ID_buque', 'inicio_operacion','final_operacion', 'supervisor', 'marchamador', 'notas','referencia_papel','importacion_vacios','importacion_llenos', 'exportacion_vacios','exportacion_llenos','detalle_importacion_vacios','detalle_importacion_llenos', 'detalle_exportacion_vacios','detalle_exportacion_llenos')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_agencia', 'codigo_contenedor', 'ID_buque', 'inicio_operacion','final_operacion', 'supervisor', 'marchamador')));
     $DATOS['ingresado_por'] = _F_usuario_cache('codigo_usuario');
     
     $ID = db_agregar_datos('opsal_carga_descarga',$DATOS);
@@ -24,6 +24,75 @@ if (isset($_POST['guardar']))
     if ($ID > 0)
     {
         registrar('Supervisión de carga/descarga (ID: <b>'.$ID.'</b>)','sup.carga.descarga');
+        
+        if (is_array($_POST['importacion_vacios']))
+        {    
+            foreach ($_POST['importacion_vacios'] as $index => $valor)
+            {
+                if ($valor == 0) continue;
+                
+                unset($DATOS);
+                $DATOS['ID_carga_descarga'] = $ID;
+                $DATOS['cantidad'] = $_POST['importacion_vacios'][$index];
+                $DATOS['tipo_contenedor'] = $_POST['importacion_vacios_tipo'][$index];
+                $DATOS['patio'] = $_POST['importacion_vacios_patio'][$index];
+                $DATOS['categoria'] = 'importacion_vacios';
+                
+                db_agregar_datos('detalle_carga_descarga',$DATOS);
+            }
+        }
+        
+        if (is_array($_POST['importacion_llenos']))
+        {    
+            foreach ($_POST['importacion_llenos'] as $index => $valor)
+            {
+                if ($valor == 0) continue;
+                
+                unset($DATOS);
+                $DATOS['ID_carga_descarga'] = $ID;
+                $DATOS['cantidad'] = $_POST['importacion_llenos'][$index];
+                $DATOS['tipo_contenedor'] = $_POST['importacion_llenos_tipo'][$index];
+                $DATOS['patio'] = $_POST['importacion_llenos_patio'][$index];
+                $DATOS['categoria'] = 'importacion_llenos';
+                
+                db_agregar_datos('detalle_carga_descarga',$DATOS);
+            }
+        }
+        
+        if (is_array($_POST['exportacion_vacios']))
+        {    
+            foreach ($_POST['exportacion_vacios'] as $index => $valor)
+            {
+                if ($valor == 0) continue;
+                
+                unset($DATOS);
+                $DATOS['ID_carga_descarga'] = $ID;
+                $DATOS['cantidad'] = $_POST['exportacion_vacios'][$index];
+                $DATOS['tipo_contenedor'] = $_POST['exportacion_vacios_tipo'][$index];
+                $DATOS['patio'] = $_POST['exportacion_vacios_patio'][$index];
+                $DATOS['categoria'] = 'exportacion_vacios';
+                
+                db_agregar_datos('detalle_carga_descarga',$DATOS);
+            }
+        }
+
+        if (is_array($_POST['exportacion_llenos']))
+        {    
+            foreach ($_POST['exportacion_llenos'] as $index => $valor)
+            {
+                if ($valor == 0) continue;
+                
+                unset($DATOS);
+                $DATOS['ID_carga_descarga'] = $ID;
+                $DATOS['cantidad'] = $_POST['exportacion_llenos'][$index];
+                $DATOS['tipo_contenedor'] = $_POST['exportacion_llenos_tipo'][$index];
+                $DATOS['patio'] = $_POST['exportacion_llenos_patio'][$index];
+                $DATOS['categoria'] = 'exportacion_llenos';
+                
+                db_agregar_datos('detalle_carga_descarga',$DATOS);
+            }
+        }        
+        
         echo '<hr /><p class="opsal_notificacion">Registro de supervisión de carga y descarga ingresado exitosamente.</p><hr />';
     }
 }
@@ -48,36 +117,47 @@ if (isset($_POST['guardar']))
                 <td>Buque</td><td><input type="text" id="ID_buque" name="ID_buque"/></td>
             </tr>
             <tr>
-                <td>Referencia en papel</td><td><input type="text" id="referencia_papel" name="referencia_papel" /></td>
-            </tr>
-            <tr>
                 <td>Inicio de operación</td><td><input class="timepicker" type="text" id="inicio_operacion" name="inicio_operacion"/></td>
             </tr>
             <tr>
                 <td>Fin de operación</td><td><input class="timepicker" type="text" id="final_operacion" name="final_operacion"/></td>
             </tr>
-            <tr>
-                <td>Notas de la revisión</td><td><textarea name="notas" style="width: 500px;height:300px;"></textarea></td>
-            </tr>
         </tbody>
     </table>
     </td>
     <td style="vertical-align: top;">
-        <table class="opsal_tabla_ancha">
+        <table class="opsal_tabla_ancha opsal_tabla_borde_oscuro tabla-estandar">
             <tr><th colspan="2">Import</th><th colspan="2">Export</th></tr>
-            <tr><td>Vacios</td><td>Llenos</td> <td>Vacios</td><td>Llenos</td></tr>
+            <tr><th>Vacios <a class="agregar_nuevo_detalle" rel="detalle_importacion_vacios" style="float:right;">+</a></th><th>Llenos <a class="agregar_nuevo_detalle" rel="detalle_importacion_llenos" style="float:right;">+</a></th> <th>Vacios <a class="agregar_nuevo_detalle" rel="detalle_exportacion_vacios" style="float:right;">+</a></th><th>Llenos <a class="agregar_nuevo_detalle" rel="detalle_exportacion_llenos" style="float:right;">+</a></th></tr>
             <tr>
-                <td><input name="importacion_vacios" type="text" style="width:90px;" value="0" /></td>
-                <td><input name="importacion_llenos" type="text" style="width:90px;" value="0" /></td>
-                <td><input name="exportacion_vacios" type="text" style="width:90px;" value="0" /></td>
-                <td><input name="exportacion_llenos" type="text" style="width:90px;" value="0" /></td>
-            </tr>
-            <tr><td>Detalle</td><td>Detalle</td> <td>Detalle</td><td>Detalle</td></tr>
-            <tr>
-                <td><textarea name="detalle_importacion_vacios" style="width:90px;height: 150px;"></textarea></td>
-                <td><textarea name="detalle_importacion_llenos" style="width:90px;height: 150px;"></textarea></td>
-                <td><textarea name="detalle_exportacion_vacios" style="width:90px;height: 150px;"></textarea></td>
-                <td><textarea name="detalle_exportacion_llenos" style="width:90px;height: 150px;"></textarea></td>
+                <td id = "detalle_importacion_vacios">
+                    <div class = "detalle">
+                        <input name="importacion_vacios[]" type="text" style="width:10px;" value="0" /> x 
+                        <select style="width:60px;" name="importacion_vacios_tipo[]"><?php echo db_ui_opciones('tipo_contenedor','nombre','opsal_tipo_contenedores'); ?></select>
+                        |&nbsp;<select style="width: 60px;" name="importacion_vacios_patio[]"><?php echo db_ui_opciones('patios','patios','patios'); ?></select><br />                   
+                    </div>
+                </td>
+                <td id = "detalle_importacion_llenos">
+                    <div class="detalle">
+                        <input name="importacion_llenos[]" type="text" style="width:10px;" value="0" /> x
+                        <select style="width:60px;" name="importacion_llenos_tipo[]"><?php echo db_ui_opciones('tipo_contenedor','nombre','opsal_tipo_contenedores'); ?></select>
+                        |&nbsp;<select style="width: 60px;" name="importacion_llenos_patio[]"><?php echo db_ui_opciones('patios','patios','patios'); ?></select><br />
+                    </div>
+                </td>
+                <td id = "detalle_exportacion_vacios">
+                    <div class="detalle">
+                        <input name="exportacion_vacios[]" type="text" style="width:10px;" value="0" /> x 
+                        <select style="width:60px;" name="exportacion_vacios_tipo[]"><?php echo db_ui_opciones('tipo_contenedor','nombre','opsal_tipo_contenedores'); ?></select>
+                        |&nbsp;<select style="width: 60px;" name="exportacion_vacios_patio[]"><?php echo db_ui_opciones('patios','patios','patios'); ?></select><br />
+                    </div>
+                </td>
+                <td id = "detalle_exportacion_llenos">
+                    <div class="detalle">
+                        <input name="exportacion_llenos[]" type="text" style="width:10px;" value="0" /> x 
+                        <select style="width:60px;" name="exportacion_llenos_tipo[]"><?php echo db_ui_opciones('tipo_contenedor','nombre','opsal_tipo_contenedores'); ?></select>
+                        |&nbsp;<select style="width: 60px;" name="exportacion_llenos_patio[]"><?php echo db_ui_opciones('patios','patios','patios'); ?></select><br />
+                    </div>
+                </td>
             </tr>
         </table>
     </td>
@@ -99,8 +179,6 @@ t1.`ID_carga_descarga`,
 t1.`ingresado_por`,
 t1.`supervisor`,
 t1.`marchamador`,
-t1.`notas`,
-t1.`referencia_papel`,
 t1.`inicio_operacion`,
 t1.`final_operacion`,
 t2.`usuario` AS "nombre_operador",
@@ -119,9 +197,9 @@ if (mysqli_num_rows($resultado) == 0)
     $ultimos_ingresos .= '<table class="tabla-estandar opsal_tabla_ancha opsal_tabla_borde_oscuro">';
     while ($f = mysqli_fetch_assoc($resultado))
     {
-        $ultimos_ingresos .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$f['ID_carga_descarga'],$f['referencia_papel'],$f['nombre_operador'],$f['supervisor'],$f['marchamador'],$f['nombre_agencia'],$f['ID_buque'],$f['referencia_papel'],$f['inicio_operacion'],$f['final_operacion'],$f['notas']);
+        $ultimos_ingresos .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$f['ID_carga_descarga'],$f['nombre_operador'],$f['supervisor'],$f['marchamador'],$f['nombre_agencia'],$f['ID_buque'],$f['inicio_operacion'],$f['final_operacion']);
     }
-    $ultimos_ingresos .= '<thead><tr><th>ID</th><th>No. Reporte</th><th>Ingresó</th><th>Supervisó</th><th>Marchamó</th><th>Agencia</th><th>Buque</th><th>Referencia</th><th>Inicio operación</th><th>Final operación</th><th>Notas</th></tr></thead>';
+    $ultimos_ingresos .= '<thead><tr><th>ID</th><th>Ingresó</th><th>Supervisó</th><th>Marchamó</th><th>Agencia</th><th>Buque</th><th>Inicio operación</th><th>Final operación</th></tr></thead>';
     $ultimos_ingresos .= '</table>';
 }
 ?>
@@ -131,6 +209,11 @@ if (mysqli_num_rows($resultado) == 0)
 </div>
 <script type="text/javascript">
     $(function(){
+        
+        $('.agregar_nuevo_detalle').click(function(){
+            $('#'+$(this).attr('rel')).append($('#'+$(this).attr('rel') + ' div').first().clone());
+        });
+        
         $('.timepicker').datetimepicker({dateFormat: 'yy-mm-dd', constrainInput: true, timeFormat: 'hh:mm:ss', defaultDate: +0}).datetimepicker('setDate', new Date());
         
         $('#form_carga_descarga').submit(function () {       
@@ -152,11 +235,7 @@ if (mysqli_num_rows($resultado) == 0)
                 return false;
             }
             
-            if ($("#referencia_papel").val() == "")
-            {
-                alert ("Ingrese el número de serie de la hoja física utilizada.");
-                return false;
-            }
+            return true;
         });
     });    
 </script>

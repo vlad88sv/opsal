@@ -30,7 +30,7 @@ if ($resultado && mysqli_num_rows($resultado) > 0)
 //***********
 
 $c_ordenes = "
-SELECT t4.`usuario` AS 'nombre_agencia', t3.`x` , t3.`y` , t3.`x2`, t3.`y2`, t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , `clase` , `tara` , `chasis` , `transportista_ingreso` , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', `arivu_ingreso`, DATEDIFF(NOW(), `arivu_ingreso`) AS 'dias_arivu' , `ingresado_por` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , DATEDIFF(NOW(), `fechatiempo_ingreso`) AS 'dias_ingreso', `fechatiempo_egreso`
+SELECT t4.`usuario` AS 'nombre_agencia', t3.`x` , t3.`y` , t3.`x2`, t3.`y2`, t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , `clase` , `tara` , `chasis` , `transportista_ingreso` , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', `arivu_ingreso`, DATEDIFF(NOW(), `arivu_ingreso`) AS 'dias_arivu' , `ingresado_por` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , (DATEDIFF(NOW(), `fechatiempo_ingreso`) + 1) AS 'dias_ingreso', `fechatiempo_egreso`
 FROM `opsal_ordenes` AS t1
 LEFT JOIN `opsal_tipo_contenedores` AS t2
 USING ( tipo_contenedor )
@@ -261,38 +261,11 @@ for ($y=36; $y > 0; $y--)
         
         $y3 = (($y2+1) % 4 == 0 ? ($y2 - 1) : ($y2 + 1));        
         
-        $qtip = $title = '
+        $qtip =  '
         <b>'.$x2.$y2.'</b> parte de <b>'.$x2.$y3.'</b><br />'.
         'Tipo: '. ucfirst($mapa[$xy]['tipo']).' / '.$mapa[$xy]['nombre']
         ;        
-        
-        
-        
-
-        
-        if (@is_array($mapa[$xy]['datos'])) {
-            $nivel = max(array_keys($mapa[$xy]['datos']));
-            
-            $title .= ' / <b>' . $nivel . '</b> estiba(s)';
-        
-            krsort($mapa[$xy]['datos'],SORT_NUMERIC);
-            
-            foreach($mapa[$xy]['datos'] as $kNivel => $vDatos)
-            {
-                $cepa_salida = ($mapa[$xy]['datos'][$kNivel]['cepa_salida'] ? $mapa[$xy]['datos'][$kNivel]['cepa_salida'].' ['.$mapa[$xy]['datos'][$kNivel]['dias_cepa'].' días desde salida de CEPA]' : 'Sin datos');
-                $arivu_ingreso = ($mapa[$xy]['datos'][$kNivel]['dias_arivu'] ? $mapa[$xy]['datos'][$kNivel]['arivu_ingreso'].' ['.$mapa[$xy]['datos'][$kNivel]['dias_arivu'].' días desde el ingreso]' : 'Sin datos');
-                
-                $title .= '<hr /><p>';
-                $title .= '<b>#'.$kNivel.'</b> - <b>'.$mapa[$xy]['datos'][$kNivel]['nombre'].'</b> Clase <b>'.$mapa[$xy]['datos'][$kNivel]['clase'].'</b><br />';
-                $title .= 'Ingreso: <b>'.$mapa[$xy]['datos'][$kNivel]['fechatiempo_ingreso'].'</b> <b>['.$mapa[$xy]['datos'][$kNivel]['dias_ingreso'].' días]</b><br />';
-                $title .= 'ARIVU: <b>'.$arivu_ingreso.'</b><br />';
-                $title .= 'CEPA: <b>'.$cepa_salida.'</b><br />';
-                $title .= 'Agencia: <b>'.$mapa[$xy]['datos'][$kNivel]['nombre_agencia'].'</b><br />';
-                $title .= 'Contenedor: <a href="#" rel="'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'" class="ejecutar_busqueda_codigo_contenedor"><b>'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'</b></a> <a  href="#" class="bq_usar_contenedor" col="'.$x2.'" fila="'.$y.'" nivel="'.$kNivel.'">[ Utilizar posición en vista acual ]</a>';
-                $title .= '</p>';
-            }
-        }
-  
+      
         if (@is_array($mapa[$xy]['datos'])) {
             $nivel = max(array_keys($mapa[$xy]['datos']));
             
@@ -329,7 +302,7 @@ for ($y=36; $y > 0; $y--)
         $grupo = (!empty($mapa[$xy]['grupo']) ? $mapa[$xy]['grupo'] : '');    
         
         
-        $buffer .= '<td id="'.$x.'_'.$y.'" grupo="'.$grupo.'" visual="'.@$mapa[$xy]['visual'].'" afinidad="'.$mapa[$xy]['afinidad'].'" x="'.$x.'" y="'.$y.'" col="'.$x2.'" fila="'.$y2.'" nivel="'.$nivel.'" qtip="'.htmlspecialchars($qtip).'" tooltip="'.htmlspecialchars($title).'" class="contenedor_mapa_casilla_'.$tipo.' '.$clases_especiales.' contenedor_mapa_casilla_estiba_'.$nivel.'">'.$mapa[$xy]['texto'].'</td>';
+        $buffer .= '<td id="'.$x.'_'.$y.'" grupo="'.$grupo.'" visual="'.@$mapa[$xy]['visual'].'" afinidad="'.$mapa[$xy]['afinidad'].'" x="'.$x.'" y="'.$y.'" col="'.$x2.'" fila="'.$y2.'" nivel="'.$nivel.'" qtip="'.htmlspecialchars($qtip).'" class="contenedor_mapa_casilla_'.$tipo.' '.$clases_especiales.' contenedor_mapa_casilla_estiba_'.$nivel.'">'.$mapa[$xy]['texto'].'</td>';
     }
     $buffer .= '</tr>';
 }

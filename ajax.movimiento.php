@@ -17,7 +17,7 @@ if (isset($_POST['guardar']))
     }
     
     // Obtengamos el codigo_orden para ese codigo de posicion y ese nivel
-    $codigo_orden = db_obtener('opsal_ordenes','codigo_orden','codigo_posicion="'.$codigo_posicion_origen.'" AND nivel="'.$_POST['posicion_nivel'].'"');
+    $codigo_orden = db_obtener('opsal_ordenes','codigo_orden','estado="dentro" AND codigo_posicion="'.$codigo_posicion_origen.'" AND nivel="'.$_POST['posicion_nivel'].'"');
 
     // Obtengamos el codigo_posicion de destino
     $c_posicion = 'SELECT codigo_posicion FROM opsal_posicion WHERE x2="'.$_POST['posicion_columna_2'].'" AND y2="'.$_POST['posicion_fila_2'].'"';
@@ -48,7 +48,7 @@ if (isset($_POST['guardar']))
         
         db_agregar_datos('opsal_movimientos',$DATOS);
         
-        registrar('Contenedor (ID: <b>'.$codigo_orden.'</b>) cambió de <b>'.$_POST['posicion_columna'].$_POST['posicion_fila'].'-'.$_POST['posicion_nivel'].'</b> a <b>'.$_POST['posicion_columna_2'].$_POST['posicion_fila_2'].'-'.$_POST['posicion_nivel_2'].'</b>','movimiento');
+        registrar('Contenedor (ID: <b>'.$codigo_orden.'</b>) cambió de <b>'.$_POST['posicion_columna'].$_POST['posicion_fila'].'-'.$_POST['posicion_nivel'].'</b> a <b>'.$_POST['posicion_columna_2'].$_POST['posicion_fila_2'].'-'.$_POST['posicion_nivel_2'].'</b>','movimiento',$codigo_orden);
         
         echo '<hr /><p class="opsal_notificacion">Contenedor movido exitosamente.</p><hr />';
     }

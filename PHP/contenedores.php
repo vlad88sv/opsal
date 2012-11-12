@@ -5,6 +5,7 @@ if (empty($_GET['modo']))
 $menu[] = array('url' => '/contenedores.html','modo' => 'patio','titulo' => 'PATIO');
 $menu[] = array('url' => '/contenedores.html','modo' => 'ingreso','titulo' => 'RECEPCION');
 $menu[] = array('url' => '/contenedores.html','modo' => 'remociones','titulo' => 'REMOCION');
+$menu[] = array('url' => '/contenedores.html','modo' => 'remocion.bloque','titulo' => 'REMOCION BLOQUE');
 $menu[] = array('url' => '/contenedores.html','modo' => 'salida','titulo' => 'DESPACHO');
 $menu[] = array('url' => '/contenedores.html','modo' => 'salida.bloque','titulo' => 'DESPACHO BLOQUE');
 
@@ -25,6 +26,9 @@ switch ($_GET['modo'])
         break;
     case 'remociones':
         require_once('PHP/contenedores.remociones.php');
+        break;
+    case 'remocion.bloque':
+        require_once('PHP/contenedores.remocion.bloque.php');
         break;
     case 'salida':
         require_once('PHP/contenedores.salida.php');
@@ -152,7 +156,7 @@ switch ($_GET['modo'])
         
         $('#opsal_mapa #contenedor_mapa table td').live('contextmenu',function(event){
             event.preventDefault();
-            jQuery.facebox($(this).attr('tooltip'));
+            jQuery.facebox({ ajax: 'ajax.seguro.php?accion=obtener_info_bloque&x2='+$(this).attr('col')+'&y2='+$(this).attr('fila') });
         });
         
         $( "#tipo_movimiento" ).buttonset();

@@ -25,6 +25,8 @@ function FacturarPeriodo(array $op)
     // Info
     $agencia = db_obtener('opsal_usuarios','usuario',"codigo_usuario='$codigo_agencia'");
     
+    $titulo = '';
+    
     switch($op['tipo_salida'])
     {
         // Caso 1 - por despacho terrestre
@@ -42,12 +44,18 @@ function FacturarPeriodo(array $op)
             $where = 'AND codigo_agencia="'.$codigo_agencia.'" AND estado = "dentro" AND fechatiempo_egreso IS NULL AND fechatiempo_ingreso < "'.$periodo_final.'"';
             $op['tipo_cobro'] = 'periodo';
             break;
+        
+        // Caso 4 - por embarque primitivo (no por buque sino que por periodo)
+        case 'embarque_primitivo':
+            $where = 'AND t1.estado="fuera"  AND codigo_agencia="'.$codigo_agencia.'" AND t1.tipo_salida="embarque" AND t1.fechatiempo_egreso IS NOT NULL AND DATE(fechatiempo_egreso) BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'"';
+            $op['tipo_cobro'] = 'completo';
+            break;
     }       
     
-    echo '<p>Facturación para período de <b>'.$periodo_inicio . '</b> a <b>'.$periodo_final.'</b> para agencia <b>'.$agencia.'</b>';
+    echo '<p>Facturación para agencia <b>'.$agencia.'</b>';
     
     // Almacenaje - contenedores ingresados entre fecha_inicio y fecha_final
-    if (in_array('fact_almacenaje',$flags))
+    if ($op['modo_facturacion'] == 'contenedores')
     {
         $anexo .= '<h2>Cargos por almacenaje</h2>';
         
@@ -125,7 +133,7 @@ function FacturarPeriodo(array $op)
     }
     
     // Remociones
-    if (in_array('fact_movimientos',$flags))
+    if ($op['modo_facturacion'] == 'contenedores')
     {
         // CASE t0.motivo WHEN "remocion" THEN CONCAT( x2, "-", y2, "-", t0.nivel ) WHEN "estiba" THEN "Recepción" WHEN "desestiba" THEN "Despacho" END AS "posicion",
         // CONCAT(COUNT(*), " @ $", IF( t3.cobro =20, t4.`p_estiba_20` , t4.`p_estiba_40` )) AS "estibas", CONCAT(COUNT(*)," @ $", IF( t3.cobro =20, t4.`p_embarque_desestiba_20` , t4.`p_embarque_desestiba_40` )) AS "desestibas",
@@ -146,11 +154,11 @@ function FacturarPeriodo(array $op)
         GROUP BY t1.codigo_orden
         ORDER BY  t1.codigo_contenedor DESC';
         $r = db_consultar($c);
-        $anexo .= '<h2>Cargos por remociones</h2>';
+        $anexo .= '<br /><hr /><br /><h2>Movimientos de estiba y desestiba</h2>';
         
 
-        $anexo .= '<div class="exportable" rel="Cargos por elaboración de condiciones">';
-        $anexo .= '<p>Cargos por remociones en <b>'.mysqli_num_rows($r).'</b> contenedores</p>';
+        $anexo .= '<div class="exportable" rel="Movimientos de estiba y desestiba">';
+        $anexo .= '<p>Movimientos de estiba y desestiba para <b>'.mysqli_num_rows($r).'</b> contenedores</p>';
         $anexo .= '<p>Periodo de <b>'.$periodo_inicio . '</b> a <b>'.$periodo_final.'</p><br />';        
         
         $anexo .= '<table class="opsal_tabla_ancha tabla-estandar opsal_tabla_borde_oscuro tabla-una-linea">';
@@ -190,7 +198,7 @@ function FacturarPeriodo(array $op)
         $cuadro[] = array('nombre' => 'Movimientos', 'sugerido' => $totales['fact_movimientos'], 'categoria' => 'fact_movimientos');
     }
     
-    if (in_array('fact_elaboracion_condicion',$flags))
+    if ($op['modo_facturacion'] == 'condiciones')
     {
         $c = 'SELECT codigo_contenedor, tipo_contenedor, fecha_ingreso, referencia_papel, t2.p_elaboracion_condiciones AS "subtotal" FROM `opsal_condiciones` AS t1 LEFT JOIN `opsal_tarifas` AS t2 ON t1.codigo_agencia = t2.codigo_usuario WHERE DATE(fecha_ingreso) BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY fecha_ingreso ASC';
         $r = db_consultar($c);
@@ -224,7 +232,7 @@ function FacturarPeriodo(array $op)
         $cuadro[] = array('nombre' => 'Elaboración de condición', 'sugerido' => $totales['fact_elaboracion_condicion'], 'categoria' => 'fact_elaboracion_condicion');
     }
 
-    if (in_array('fact_lineas_amarre',$flags))
+    if ($op['modo_facturacion'] == 'lineas')
     {
         $c = 'SELECT ID_buque AS "Buque", fecha_ingreso "Ingreso", @dias_patio := DATEDIFF( NOW() , `fecha_ingreso` ) AS "Días en patio totales",  @dias_en_patio := DATEDIFF( COALESCE(`fecha_egreso`, "'.$periodo_final.'" ), GREATEST (`fecha_ingreso`, "'.$periodo_inicio.'")) AS "Días tomados", p_lineas_amarre_manejo AS "Costo manejo", p_lineas_amarre_almacenaje AS "Costo almacenaje", ((@dias_patio * p_lineas_amarre_almacenaje)+(p_lineas_amarre_manejo*tiempo_operacion)) AS "Subtotal" FROM opsal_lineas_amarre LEFT JOIN opsal_tarifas ON codigo_agencia=codigo_usuario WHERE fecha_ingreso < "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY  `fecha_ingreso` ASC';
         $r = db_consultar($c);
@@ -244,7 +252,7 @@ function FacturarPeriodo(array $op)
         $cuadro[] = array('nombre' => 'Lineas de amarre', 'sugerido' => $totales['fact_lineas_amarre'], 'categoria' => 'fact_lineas_amarre');
     }
     
-    if (in_array('fact_carga_descarga',$flags))
+    if ($op['modo_facturacion'] == 'opscdmarchamos')
     {
         $c = 'SELECT `ID_buque`, `inicio_operacion` AS "Inicio operación", `final_operacion` AS "Final operación", @duracion :=   FORMAT((time_to_sec(timediff(`final_operacion`,`inicio_operacion`)) / 3600),2) AS "Duración (h) de operación", FORMAT((@duracion*p_supervision_carga_descarga),2) AS "Subtotal" FROM opsal_carga_descarga LEFT JOIN opsal_tarifas ON codigo_agencia=codigo_usuario WHERE DATE(fecha_ingreso) BETWEEN "'.$periodo_inicio.'" AND "'.$periodo_final.'" AND codigo_agencia="'.$codigo_agencia.'" ORDER BY  `fecha_ingreso` ASC';
         $r = db_consultar($c);

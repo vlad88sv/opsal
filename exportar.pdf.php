@@ -17,13 +17,13 @@ ob_start();
 </head>
 <body>
 <style>
-    <?php //readfile('CSS/estilo.css'); ?>
+    <?php readfile('CSS/estilo.css'); ?>
     h1 {font-size: 16pt;}
     h2 {font-size: 13pt;font-weight:normal;}
     h3 {font-size: 12pt;font-weight:normal;}
     table {border-collapse: collapse;}
-    table th {background-color:white !important;font-weight:bold;border:1px solid grey;}
-    table td {background-color:white !important;font-weight:normal;border:1px solid grey;}
+    table th {background-color:white !important;font-weight:bold;}
+    table td {background-color:white !important;font-weight:normal;}
 </style>
 <h1><?php echo PROY_EMPRESA; ?></h1>
 <?php echo strip_tags(urldecode(@$_POST['data']),'<div><table><p><tr><th><tbody><thead><td><h1><h2>'); ?>

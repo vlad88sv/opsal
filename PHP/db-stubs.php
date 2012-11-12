@@ -38,8 +38,8 @@ function fechatiempo_h_desde_mysql_datetime($tiempo){
     return date( 'd-m-Y h:i:sa',strtotime($tiempo) );
 }
 
-function registrar($contenido, $contexto)
+function registrar($contenido, $contexto, $ID = 0)
 {
-    db_agregar_datos('opsal_bitacora',array('contenido' => $contenido, 'contexto' => $contexto, 'codigo_usuario' => _F_usuario_cache('codigo_usuario')));
+    db_agregar_datos('opsal_bitacora',array('contenido' => $contenido, 'contexto' => $contexto, 'codigo_usuario' => _F_usuario_cache('codigo_usuario'), 'ID' => $ID));
 }
 ?>

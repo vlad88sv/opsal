@@ -22,7 +22,7 @@ if (mysqli_num_rows($r) > 0)
 }
 
 $agencia = (!empty($_GET['codigo_agencia']) ? ' AND codigo_agencia="'.$_GET['codigo_agencia'] .'"' : '');
-$c = 'SELECT t2.usuario AS "Naviera", `codigo_contenedor` AS "Contenedor", `tipo_contenedor` AS "Tipo", `referencia_papel` AS "EIR", `codigo_cheque` AS "Cheque", `fecha_ingreso` AS "Fecha", `notas` AS "Revisión" FROM `opsal_condiciones` AS t1 LEFT JOIN opsal_usuarios AS t2 ON t1.codigo_agencia = t2.codigo_usuario  WHERE DATE(fecha_ingreso) BETWEEN "'.$fecha_inicio.'" AND "'.$fecha_final.'" '.$agencia;
+$c = 'SELECT t2.usuario AS "Naviera", `codigo_contenedor` AS "Contenedor", `tipo_contenedor` AS "Tipo", `referencia_papel` AS "EIR", `codigo_cheque` AS "Cheque", `fecha_ingreso` AS "Fecha" FROM `opsal_condiciones` AS t1 LEFT JOIN opsal_usuarios AS t2 ON t1.codigo_agencia = t2.codigo_usuario  WHERE DATE(fecha_ingreso) BETWEEN "'.$fecha_inicio.'" AND "'.$fecha_final.'" '.$agencia;
 $r = db_consultar($c);
 ?>
 <div class="noimprimir">

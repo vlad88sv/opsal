@@ -102,7 +102,27 @@ if (mysqli_num_rows($r) > 0)
 <input type="hidden" name="guardar" value="guardar" />
 <input type="submit" id="ingresar_contenedor" value="Ingresar contenedor" /> <span id="indicador_de_envio"></span>
 </form>
+<?php
+$r = db_consultar('SELECT buque_ingreso FROM `opsal_ordenes` WHERE buque_ingreso<>"" GROUP BY buque_ingreso');
+$tagsBuque = array();
+while ($f = db_fetch($r)) $tagsBuque[] = $f['buque_ingreso'];
 
+$r = db_consultar('SELECT cliente_ingreso FROM `opsal_ordenes` WHERE cliente_ingreso<>"" GROUP BY cliente_ingreso');
+$tagsDestino = array();
+while ($f = db_fetch($r)) $tagsCliente[] = $f['cliente_ingreso'];
+
+$r = db_consultar('SELECT cheque_ingreso FROM `opsal_ordenes` WHERE cheque_ingreso<>"" GROUP BY cheque_ingreso');
+$tagsCheque = array();
+while ($f = db_fetch($r)) $tagsCheque[] = $f['cheque_ingreso'];
+
+$r = db_consultar('SELECT transportista_ingreso FROM `opsal_ordenes` WHERE transportista_ingreso<>"" GROUP BY transportista_ingreso');
+$tagsTransportista = array();
+while ($f = db_fetch($r)) $tagsTransportista[] = $f['transportista_ingreso'];
+
+$r = db_consultar('SELECT chofer_ingreso FROM `opsal_ordenes` WHERE chofer_ingreso<>"" GROUP BY chofer_ingreso');
+$tagsChofer = array();
+while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
+?>
 <script type="text/javascript">
     cubicaje = 0;
     afinidad = 20;
@@ -122,6 +142,12 @@ if (mysqli_num_rows($r) > 0)
     }
     
     $(function(){
+        
+        $( "#buque_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsBuque) ;?>"]});
+        $( "#cliente_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsCliente) ;?>"]});
+        $( "#transportista_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsTransportista) ;?>"]});
+        $( "#cheque" ).autocomplete({source: ["<?php echo join('","', $tagsCheque) ;?>"]});
+        $( "#chofer_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsChofer) ;?>"]});
         
         $("#codigo_contenedor").blur(function(){
             $("#codigo_contenedor").val($("#codigo_contenedor").val().toUpperCase());
@@ -190,13 +216,6 @@ if (mysqli_num_rows($r) > 0)
                 return false;
             }
             
-            if ($("#codigo_cheque").val() == "")
-            {
-                alert ("Ingrese el nombre del cheque.");
-                return false;
-            }
-            
-
             // NYK y Medit
             /*
             if ($("#cepa_salida").val() == "")
@@ -263,7 +282,8 @@ if (mysqli_num_rows($r) > 0)
                 alert('No se puede ubicar el contenedor en este punto. Modo estricto esta activado.');
                 return false;
             }
-
+            
+            
             
             var x = $(this).attr('x');
             var y = $(this).attr('y');
@@ -274,7 +294,24 @@ if (mysqli_num_rows($r) > 0)
             
             referencia = $('#'+x+'_'+y);
             
-            console.log('Ubicando contenedor de ' + cubicaje + ' pies³ en '+ x + ',' + y + '['+referencia.position().left+','+referencia.position().top+']');            
+            
+            // Búsquemos que la cola no se monte sobre otro contenedor
+            if (cubicaje > 20) {
+                if ($('#'+x+'_'+(parseInt(y)-1)).attr('nivel') != '0') {
+                    alert('No se puede ubicar el contenedor en este punto. La cola del contenedor queda sobre otro bloque.');
+                    return false;
+                }
+            }
+            
+            if (cubicaje > 40) {
+                if ($('#'+x+'_'+(parseInt(y)-2)).attr('nivel') != '0') {
+                    alert('No se puede ubicar el contenedor en este punto. La cola del contenedor queda sobre otro bloque.');
+                    return false;
+                }
+            }
+            
+            //console.log('Ubicando contenedor de ' + cubicaje + ' pies³ en '+ x + ',' + y + '['+referencia.position().left+','+referencia.position().top+']');            
+            
             $("#contenedor_visual").css('left',(referencia.position().left)).css('top',(referencia.position().top)).css('height',((19*(cubicaje/20))+1) + 'px').css('width','11px');  
         });
         

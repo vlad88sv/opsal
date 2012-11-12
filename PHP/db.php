@@ -142,8 +142,15 @@ function db_obtener($tabla,$campo,$where)
 {
     $c ="SELECT $campo AS 'resultado' FROM $tabla WHERE $where LIMIT 1";
     $r = db_consultar($c);
-    $f = mysqli_fetch_assoc($r);
-    return $f['resultado'];
+    if (mysqli_num_rows($r) == 1)
+    {
+        $f = mysqli_fetch_assoc($r);
+        return $f['resultado'];
+    }
+    else
+    {
+        return false;
+    }
 }
 
 function db_fetch($resultado)

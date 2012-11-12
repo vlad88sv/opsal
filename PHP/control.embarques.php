@@ -1,5 +1,5 @@
 <?php
-$c = 'SELECT buque_egreso, COUNT(*) AS "cantidad", CONCAT(DATE(MIN(`fechatiempo_egreso`)), "/", DATE(MAX(`fechatiempo_egreso`))) AS "fecha_embarque" FROM opsal_ordenes WHERE tipo_salida="embarque" GROUP BY `buque_egreso` ORDER BY MAX(`fechatiempo_egreso`) DESC LIMIT 20';
+$c = 'SELECT buque_egreso, COUNT(*) AS "cantidad", CONCAT(DATE_FORMAT(MIN(`fechatiempo_egreso`),"%e/%b/%y"), " al ", DATE_FORMAT(MAX(`fechatiempo_egreso`),"%e/%b/%y")) AS "fecha_embarque" FROM opsal_ordenes WHERE tipo_salida="embarque" GROUP BY `buque_egreso` ORDER BY MAX(`fechatiempo_egreso`) DESC LIMIT 20';
     $r = db_consultar($c);
     
     $options_buque = '<option selected="selected" value="">Seleccione un buque</option>';

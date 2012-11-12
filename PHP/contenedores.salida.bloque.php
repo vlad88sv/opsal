@@ -152,7 +152,23 @@ if (mysqli_num_rows($r) > 0)
 </form>
 <hr />
 <p><b>Nota: </b> al continuar guardara la salida de los contenedores seleccionados y podrá imprimir la lista detallada de contenedores.</p>
+<?php
+$c = 'SELECT buque_egreso FROM `opsal_ordenes` WHERE tipo_salida="embarque" GROUP BY buque_egreso';
+$r = db_consultar($c);
+$tagsBuque = array();
+while ($f = db_fetch($r))
+{
+    $tagsBuque[] = $f['buque_egreso'];
+}
 
+$c = 'SELECT destino FROM `opsal_ordenes` WHERE tipo_salida="embarque" GROUP BY destino';
+$r = db_consultar($c);
+$tagsDestino = array();
+while ($f = db_fetch($r))
+{
+    $tagsDestino[] = $f['destino'];
+}
+?>
 <script type="text/javascript">
     modo = 'inicio';
     inicio = final = null;
@@ -165,9 +181,12 @@ if (mysqli_num_rows($r) > 0)
         elementos.css('color',color);
     }, 500);
     */
-    
+        
     $(function(){
         $("#contenedor_visual").css('opacity','0.2');
+        
+        $( "#buque_egreso" ).autocomplete({source: ["<?php echo join('","', $tagsBuque) ;?>"]});
+        $( "#destino" ).autocomplete({source: ["<?php echo join('","', $tagsDestino) ;?>"]});
         
         $("#contenedor_mapa").bind('mapa_iniciado',function(event, data){
             numero = data.filtro_numero_resultados || 0;

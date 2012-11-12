@@ -15,6 +15,8 @@ $arrJS[] = 'jquery.qtip2';
 $arrJS[] = 'jquery.facebox';
 $arrJS[] = 'jquery.ui';
 $arrJS[] = 'jquery.ui.widget';
+$arrJS[] = 'jquery.ui.autocomplete';
+$arrJS[] = 'jquery.ui.widget';
 $arrJS[] = 'jquery.ui.mouse';
 $arrJS[] = 'jquery.ui.button';
 $arrJS[] = 'jquery.ui.position';
@@ -107,6 +109,8 @@ HEAD_EXTRA();
 <?php endif; ?>
 <script type="text/javascript">
 $(function(){
+    setInterval(function(){$.get('ping.php');},60000);
+
     $('.blink').each(function() {
         var elem = $(this);
         setInterval(function() {

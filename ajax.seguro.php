@@ -2,13 +2,26 @@
 require_once('config.php');
 require_once (__PHPDIR__."vital.php");
 
+//error_log('ajax');
+
 if (!S_iniciado())
     return;
+
+//error_log(print_r($_GET,true));
+    
+if (!empty($_GET['accion']))
+{
+    $_POST['accion'] = $_GET['accion'];
+}
 
 if (empty($_POST['accion'])) return;
 
 switch ($_POST['accion'])
 {
+    case 'obtener_info_bloque':
+        run_part__obtener_info_bloque();
+        break;
+    
     case 'eliminar_despacho':
         run_part__eliminar_despacho();
         break;
@@ -20,6 +33,62 @@ switch ($_POST['accion'])
     case 'obtener_ultimos_buques':
         run_part__obtener_ultimos_buques();
         break;
+    
+    case 'verificar_doble_ingreso_condicion':
+        run_part__verificar_doble_ingreso_condicion();
+        break;
+}
+
+function run_part__verificar_doble_ingreso_condicion()
+{
+    $dato = db_obtener('opsal_condiciones','COUNT(*)', 'codigo_contenedor="'.db_codex($_POST['contenedor']).'" AND referencia_papel="'.db_codex($_POST['EIR']).'"');
+    
+    echo json_encode(array('cantidad' => $dato));
+    
+}
+
+function run_part__obtener_info_bloque()
+{
+    //error_log('run_part__obtener_info_bloque');
+    $x2 = $_GET['x2'];
+    $y2 = $_GET['y2'];
+    
+    $c = "
+    SELECT t4.`usuario` AS 'nombre_agencia', t3.`x` , t3.`y` , t3.`x2`, t3.`y2`, t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , `clase` , `tara` , `chasis` , `transportista_ingreso` , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', `arivu_ingreso`, DATEDIFF(NOW(), `arivu_ingreso`) AS 'dias_arivu' , `ingresado_por` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , DATEDIFF(NOW(), `fechatiempo_ingreso`) AS 'dias_ingreso', `fechatiempo_egreso`
+    FROM `opsal_ordenes` AS t1
+    LEFT JOIN `opsal_tipo_contenedores` AS t2
+    USING ( tipo_contenedor )
+    LEFT JOIN `opsal_posicion` AS t3
+    USING ( codigo_posicion )
+    LEFT JOIN `opsal_usuarios` AS t4
+    ON t4.`codigo_usuario` = t1.`codigo_agencia`
+    WHERE `estado` = 'dentro' AND t3.x2='$x2' AND t3.y2='$y2'
+    ORDER BY t1.nivel DESC
+    ";
+    
+    $r = db_consultar($c);
+
+    //error_log($c);
+    
+    $title = '';
+    
+    while ($f = db_fetch($r))
+    {
+        $cepa_salida = ($f['cepa_salida'] ? $f['cepa_salida'].' ['.$f['dias_cepa'].' días desde salida de CEPA]' : 'Sin datos');
+        $arivu_ingreso = ($f['dias_arivu'] ? $f['arivu_ingreso'].' ['.$f['dias_arivu'].' días desde el ingreso]' : 'Sin datos');
+        
+        $title .= '<hr /><p>';
+        $title .= '<b>#'.$f['nivel'].'</b> - <b>'.$f['nombre'].'</b> Clase <b>'.$f['clase'].'</b><br />';
+        $title .= 'Ingreso: <b>'.$f['fechatiempo_ingreso'].'</b> <b>['.$f['dias_ingreso'].' días]</b><br />';
+        $title .= 'ARIVU: <b>'.$arivu_ingreso.'</b><br />';
+        $title .= 'CEPA: <b>'.$cepa_salida.'</b><br />';
+        $title .= 'Agencia: <b>'.$f['nombre_agencia'].'</b><br />';
+        $title .= 'Contenedor: <a href="#" rel="'.$f['codigo_contenedor'].'" class="ejecutar_busqueda_codigo_contenedor"><b>'.$f['codigo_contenedor'].'</b></a> <a  href="#" class="bq_usar_contenedor" col="'.$x2.'" fila="'.$y.'" nivel="'.$kNivel.'">[ Utilizar posición en vista acual ]</a>';
+        $title .= '</p>';
+    }
+    
+    echo $title;
+
 }
 
 function run_part__obtener_ultimos_buques()

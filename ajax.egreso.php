@@ -17,7 +17,7 @@ if (isset($_POST['guardar']))
     unset($DATOS);
     $DATOS['codigo_posicion'] = 0;
     $DATOS['nivel'] = 0;
-    $datos['cobrar_a'] = 0;
+    $datos['cobrar_a'] = $codigo_agencia;
     $DATOS['motivo'] = 'desestiba';
     $DATOS['fechatiempo'] = $_POST['fechatiempo_egreso'];
     $DATOS['codigo_orden'] = $codigo_orden;
@@ -26,7 +26,7 @@ if (isset($_POST['guardar']))
     
     db_agregar_datos('opsal_movimientos',$DATOS);
     
-    registrar('Salida de contenedor (ID: <b>'.$codigo_orden.'</b>) en <b>'.$_POST['posicion_columna'].'-'.$_POST['posicion_fila'].'-'.$_POST['posicion_nivel'].'</b>','egreso');
+    registrar('Salida de contenedor (ID: <b>'.$codigo_orden.'</b>) en <b>'.$_POST['posicion_columna'].'-'.$_POST['posicion_fila'].'-'.$_POST['posicion_nivel'].'</b>','egreso',$codigo_orden);
     echo '<hr /><p class="opsal_notificacion">Contenedor egresado exitosamente.</p><hr />';
 }
 ?>
