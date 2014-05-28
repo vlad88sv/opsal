@@ -3,7 +3,7 @@
 <table class="tabla-estandar opsal_tabla_ancha">
     <tbody>
         <tr>
-            <td>Posición de contenedor</td><td>
+            <td>Posición de bloque a mover</td><td>
             <table id="drop_target" class="opsal_tabla_ancha tabla-estandar tabla-centrada">
             <tbody>
             <tr><th>Col.</th><th>Fila</th></tr>
@@ -17,7 +17,7 @@
         </tr>
 
         <tr>
-            <td>Posición de destino</td><td>
+            <td>Posición vacia de destino</td><td>
             <table class="opsal_tabla_ancha tabla-estandar tabla-centrada">
             <tbody>
             <tr><th>Col.</th><th>Fila</th></tr>

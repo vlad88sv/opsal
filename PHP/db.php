@@ -11,6 +11,10 @@ function db_conectar(){
     $db_link = @mysqli_connect(db__host, db__usuario, db__clave, db__db) or die("Fue imposible conectarse a la base de datos.<br /><hr />Detalles del error:<pre>" . mysqli_error($db_link) . "</pre>");
 }
 
+function db_obtener_link_legado(){
+    return @mysql_connect(db__host, db__usuario, db__clave, db__db);
+}
+
 function db_consultar($consulta){
     global $db_link;
     global $db_contador;

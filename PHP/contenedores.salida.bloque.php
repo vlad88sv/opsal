@@ -4,7 +4,7 @@ $options_agencia = '';
 $c = 'SELECT codigo_usuario, usuario FROM opsal_usuarios WHERE nivel="agencia" ORDER BY usuario ASC';
 $r = db_consultar($c);
 
-$options_agencia = '<option selected="selected" value="">Seleccione una</option>';
+$options_agencia = '<option selected="selected" value="">Cualquiera</option>';
 if (mysqli_num_rows($r) > 0)
 {
     while ($registro = mysqli_fetch_assoc($r))
@@ -14,10 +14,10 @@ if (mysqli_num_rows($r) > 0)
 }
 ?>
 <form id="frm_cotizacion" action="/contenedores.html?modo=cotizacion" method="post" autocomplete="off">
-<h1>Opciones de refinado</h1>
+<h1>Opciones para filtrado</h1>
 <table class="tabla-estandar opsal_tabla_ancha">
     <tbody>
-        <tr><td>Agencia</td><td><select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select></td></tr>
+        <tr><td>Naviera</td><td><select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select></td></tr>
         <tr><td>Clase(s)</td><td>
         <div id="clase_contenedor" style="text-align:center;">
             <input type="checkbox" name="clase[]" id="clase_a" value="A"/><label for="clase_a">A</label>&nbsp;
@@ -54,6 +54,9 @@ if (mysqli_num_rows($r) > 0)
 
         <input type="radio" name="tipo_contenedor" id="clase_ot" value="OT"/>
         <label for="clase_ot">OT</label>&nbsp;
+
+        <input type="radio" name="tipo_contenedor" id="clase_ho" value="HO"/>
+        <label for="clase_ho">OTHC</label>&nbsp;
         
         <input type="radio" name="tipo_contenedor" id="clase_rf" value="RF"/>
         <label for="clase_rf">RF</label>&nbsp;
@@ -135,6 +138,7 @@ if (mysqli_num_rows($r) > 0)
 </form>
 <br /><hr />
 <form id="frm_salida" action="detalle.salida.bloque.html" method="post" autocomplete="off">
+<h1>Detalles de salida</h1>
 <table class="tabla-estandar opsal_tabla_ancha">
     <tbody>       
         <tr><td>Fecha salida</td><td><input type="text" name="fechatiempo_egreso" id="fechatiempo_egreso" class="calendario" /></td></tr>
@@ -146,9 +150,9 @@ if (mysqli_num_rows($r) > 0)
 <table id="detalles_salida" class="opsal_tabla_ancha opsal_tabla_letra_pequena">
     <tbody>
     </tbody>
-    <thead><tr><th>Agencia</th></th><th>Contenedor</th><th>Tipo</th><th>Posicion</th><th>Salida</th></tr></thead>
+    <thead><tr><th>Naviera</th></th><th>Contenedor</th><th>Tipo</th><th>Posicion</th><th>Salida</th></tr></thead>
 </table>
-<input type="submit" name="ejecutar_salida" value="Ejecutar salida y continuar" />
+<input type="submit" id="ejecutar_salida" name="ejecutar_salida" value="Ejecutar salida y continuar" />
 </form>
 <hr />
 <p><b>Nota: </b> al continuar guardara la salida de los contenedores seleccionados y podrá imprimir la lista detallada de contenedores.</p>
@@ -304,6 +308,8 @@ while ($f = db_fetch($r))
                 alert ("Ingrese el nombre del buque.");
                 return false;
             }
+            
+            $("#ejecutar_salida").attr('disable','disable');
         });
     });
 </script>

@@ -1,31 +1,25 @@
 <?php
-/****************** guardar_factura *****************/
-if (isset($_POST['guardar_factura']))
-{
-    $factura = FacturarPeriodo($_POST);
-    
-    unset($DATOS);
-    $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');
-    $DATOS['codigo_agencia'] = $_POST['codigo_agencia'];
-    $DATOS['periodo_inicio'] = $_POST['periodo_inicio'];
-    $DATOS['periodo_final'] = $_POST['periodo_final'];
-    $DATOS['anexo'] = $factura['anexo'];
-    
-    $codigo_factura = db_agregar_datos('opsal_facturas',$DATOS);
-    
-    // hoy los detalles
-    foreach($_POST['categoria'] as $indice => $cat)
-    {
-        unset($DATOS);
-        $DATOS['codigo_factura'] = $codigo_factura;
-        $DATOS['categoria'] = $cat;
-        $DATOS['concepto'] = $_POST['concepto'][$indice];
-        $DATOS['grabado'] = $_POST['grabado'][$indice];
-        
-        db_agregar_datos('opsal_factura_detalles',$DATOS);
+if (_F_usuario_cache('modulo_facturar') == '0')
+    protegerme();
+?>
+<?php
+/****************** generar_factura *****************/
+if (isset($_POST['generar_factura']))
+{    
+    $facturas = array();
+    $UNIQID = uniqid('',true);
+   
+    foreach($_POST['detalle'] as $categoria => $datos)
+    {        
+        if (isset($datos['utilizar']))
+        {
+            $facturas[] = CrearFactura($UNIQID, $_POST['codigo_agencia'], $categoria, $datos);
+        }
     }
+        
+    header('Location: /control.facturas.html?grupo='.$UNIQID);
     
-    header('Location: /control.facturas.html?cf='.$codigo_factura);
+    return;
 }
 
 /****************** FIN guardar_factura *************/
@@ -43,16 +37,16 @@ if (mysqli_num_rows($r) > 0)
 ?>
 <div class="noimprimir">
 <h1 class="opsal_titulo">Asistente de facturación</h1>
-<form action="/facturacion.html" method="post" id="controles_facturacion">
+<form action="/facturacion.html" method="get" id="controles_facturacion">
     <hr />
     <div style="font-size:0.8em;padding:4px;">
-        <b>Facturar para operación </b>
+        <p><b>Facturar para operación </b></p>
         <select id="modo_facturacion" name="modo_facturacion">
-            <option rel="modo_1" value="contenedores">Almacenaje y remociones</option>
+            <option rel="modo_1" value="contenedores">Almacenaje y movimientos</option>
             <option rel="modo_2" value="condiciones">Elaboración de condición</option>
-            <option rel="modo_2" value="lineas">Líneas de amarre</option>
-            <!--<option rel="modo_2" value="opscdmarchamos">Supervisón OPS C/D y marchamos</option>!-->
         </select>
+        &nbsp;
+        <input type="submit" id="filtrar" name="filtrar" value="Realizar filtrado" />
     </div>
     <hr />
     <div style="font-size:0.8em;padding:4px;">
@@ -60,15 +54,23 @@ if (mysqli_num_rows($r) > 0)
         <select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select>
         
         <span id="modo_2" style="display:none;">
-            &nbsp;facturar servicios prestados para el rubro
+            &nbsp;facturar servicios prestados para el rubro de <b>elaboración de condiciones</b>
         </span>
         <span id="modo_1">
             &nbsp;los contenedores que&nbsp;
-            <select name="tipo_salida" id="tipo_salida">
-                <option value="patio">no fueron despachados</option>
+            <select name="tipo_salida" id="tipo_salida" style="width:150px;">
+                <option value="estadia">no fueron despachados</option>
+                <option value="estibas">Solo estibas de no despachados</option>
                 <option value="terrestre">fueron despachados vía terrestre</option>
-                <option value="embarque">fueron despachados vía embarque</option>
-                <option value="embarque_primitivo">fueron embarcados durante</option>
+                <option value="terrestre2">fueron despachados vía terrestre [APL]</option>
+                <option value="embarque">fueron despachados en el buque</option>
+                <option value="embarque_primitivo">fueron embarcados</option>
+                <option value="remociones_simples">tuvieron remociones pero no tienen despacho</option>
+                <option value="remociones">tuvieron remociones y fueron despachados</option>
+                <option value="remociones_embarque">tuvieron remociones y despachado via buque</option>
+                <option value="remociones_terrestre">tuvieron remociones y despachado via terrestre</option>
+                <option value="dt">tuvieron doble transferencia</option>
+                <option value="dm">tuvieron doble movimiento</option>
             </select>        
     
             <span id="seleccion_buque" style="display:none;">
@@ -94,25 +96,30 @@ if (mysqli_num_rows($r) > 0)
             &nbsp;al&nbsp;
             <input type="text" class="calendario" name="periodo_final" value="" style="width:60px;" />
         </span>
+        <span id="codigo_agencia_en_favor" style="display:none;">
+        &nbsp;en favor de&nbsp;
+        <select id="codigo_agencia_2" name="codigo_agencia_2"><?php echo $options_agencia; ?></select>
+        </span>
     </div>
-<br /><hr />
-<div style="text-align: center;padding:10px;"><input type="submit" id="filtrar" name="filtrar" value="Realizar filtrado" /></div>
 </form>
 <hr />
 </div>
 <?php
-if (isset($_POST['filtrar']))
+if (isset($_GET['filtrar']))
 {
-    $factura = FacturarPeriodo($_POST);
-    echo '<form action="/facturacion.html" method="post">';
+    echo '<p>Compartir estos datos: <input readonly="readonly" onclick="this.focus();this.select();" style="width:850px;" value="'.curPageURL().'"></p>';
+    echo '<hr />';
+    
+    $factura = FacturarPeriodo($_GET);
+    echo '<form action="/facturacion.html" method="POST" target="_blank">';
     
     echo '<div class="noimprimir" style="border-radius:5px; border: 1px solid grey; padding: 5px;">';
         echo '<h1>Totales</h1>';
         echo $factura['cuadro'];
-        echo '<div style="text-align:right;"><input type="submit" value="Guardar factura" name="guardar_factura" /></div>';
+        echo '<div style="text-align:right;"><input type="submit" value="Generar factura" id="generar_factura" name="generar_factura" /></div>';
     echo '</div>';
     
-    echo '<hr />';
+    echo '<br />';
     
     echo '<div style="border-radius:5px; border: 1px solid grey; padding: 5px;">';
         echo '<h1>Anexos</h1>';
@@ -121,9 +128,9 @@ if (isset($_POST['filtrar']))
     
     echo '<div class="noimprimir">';
         echo '<br /><hr />';
-        echo '<input type="hidden" name="periodo_inicio" value="'.$_POST['periodo_inicio'].'" />';
-        echo '<input type="hidden" name="periodo_final" value="'.$_POST['periodo_final'].'" />';
-        echo '<input type="hidden" name="codigo_agencia" value="'.$_POST['codigo_agencia'].'" />';
+        echo '<input type="hidden" name="periodo_inicio" value="'.$_GET['periodo_inicio'].'" />';
+        echo '<input type="hidden" name="periodo_final" value="'.$_GET['periodo_final'].'" />';
+        echo '<input type="hidden" name="codigo_agencia" value="'.$_GET['codigo_agencia'].'" />';
     echo '</div>';
     
     echo '</form>';
@@ -131,6 +138,16 @@ if (isset($_POST['filtrar']))
 ?>
 <script type="text/javascript">
     $(function(){
+        
+        $("#generar_factura").click(function(event){
+            if ($('.chkconcepto:checked').length == 0)
+            {
+                alert ("Debe seleccionar un concepto por lo menos.");
+                event.preventDefault();
+                return;
+            }
+        });
+        
         $(".calendario").datepicker({dateFormat: 'yy-mm-dd', constrainInput: true, defaultDate: +0}).datepicker('setDate', new Date());
         
         $('#tipo_de_facturacion').change(function(){
@@ -147,7 +164,7 @@ if (isset($_POST['filtrar']))
                 $('#seleccion_periodo').hide();    
             }
             
-            if ( $('#tipo_salida option:selected').val() == 'terrestre' && $('#tipo_cobro option:selected').val() == 'completo' )
+            if ( ($('#tipo_salida option:selected').val() == 'terrestre' || $('#tipo_salida option:selected').val() == 'terrestre2') && $('#tipo_cobro option:selected').val() == 'completo' )
             {
                 $('#texto_si_terrestre').show();
             }
@@ -165,7 +182,7 @@ if (isset($_POST['filtrar']))
                 $('#seleccion_buque_load').html('[cargando]').load('ajax.seguro.php',{accion : 'obtener_ultimos_buques', codigo_agencia : $("#codigo_agencia").val()});
             }
             
-            if ($('#tipo_salida option:selected').val() == 'terrestre')
+            if (($('#tipo_salida option:selected').val() == 'terrestre' || $('#tipo_salida option:selected').val() == 'terrestre2'))
             {
                 if ($('#tipo_cobro option:selected').val() == 'completo')
                 {
@@ -180,7 +197,7 @@ if (isset($_POST['filtrar']))
                 $('#seleccion_buque_load').empty();
             }
             
-            if ($('#tipo_salida option:selected').val() == 'patio')
+            if ($('#tipo_salida option:selected').val() == 'patio' || $('#tipo_salida option:selected').val() == 'remociones')
             {
                 $('#texto_si_terrestre').hide();
                 $('#seleccion_solo_despacho').hide();
@@ -191,13 +208,20 @@ if (isset($_POST['filtrar']))
             
             if ($('#tipo_salida option:selected').val() == 'embarque_primitivo')
             {
-                $('#tipo_cobro').val('completo').hide();
+                $('#tipo_cobro').val('completo');
                 
                 $('#seleccion_solo_despacho').hide();
                 $('#seleccion_buque').hide();
                 $('#texto_si_terrestre').hide();
                 $('#seleccion_periodo').show();
             }
+            
+            if ($('#tipo_salida option:selected').val() == 'remociones' || $('#tipo_salida option:selected').val() == 'remociones_terrestre' || $('#tipo_salida option:selected').val() == 'remociones_embarque'  || $('#tipo_salida option:selected').val() == 'remociones_simples')    
+            {
+               $("#codigo_agencia_en_favor").show();
+            } else {
+                $("#codigo_agencia_en_favor").hide();
+            }       
             
         });
         

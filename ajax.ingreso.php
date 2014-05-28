@@ -7,6 +7,12 @@ if (isset($_POST['guardar']))
 {
     $codigo_agencia = $_POST['codigo_agencia'];
     
+    if ( empty($codigo_agencia) )
+    {
+        echo 'detalle: no hay codigo de agencia';
+        return;
+    }
+    
     // Obtengamos el codigo_posicion (punto inicial para el caso de los de 40, 45 y 48)
     //$_POST = 'pocision_columna','posicion_fila','posicion_nivel'
     $c_posicion = 'SELECT codigo_posicion FROM opsal_posicion WHERE x2="'.$_POST['posicion_columna'].'" AND y2="'.$_POST['posicion_fila'].'"';
@@ -22,7 +28,7 @@ if (isset($_POST['guardar']))
     $_POST['tipo_contenedor'] = $_POST['tipo_contenedor'].$_POST['tamano_contenedor'];
         
             
-    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_contenedor','cheque_ingreso','clase','tipo_contenedor','codigo_agencia','tara','chasis','transportista_ingreso','buque_ingreso','cepa_salida','arivu_ingreso','observaciones_ingreso','arivu_referencia','fechatiempo_ingreso','eir_ingreso','ingreso_con_danos','cliente_ingreso','chofer_ingreso')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_contenedor','cheque_ingreso','clase','tipo_contenedor','codigo_agencia','tara','chasis','transportista_ingreso','buque_ingreso','cepa_salida','arivu_ingreso','observaciones_ingreso','arivu_referencia','fechatiempo_ingreso','eir_ingreso','ingreso_con_danos','cliente_ingreso','chofer_ingreso','ano_fabricacion','booking_number_ingreso')));
     $DATOS['estado'] = 'dentro';
     $DATOS['nivel'] = $_POST['posicion_nivel'];
     $DATOS['codigo_posicion'] = $codigo_posicion;
@@ -45,8 +51,12 @@ if (isset($_POST['guardar']))
         
         db_agregar_datos('opsal_movimientos',$DATOS);
         
+        enviar_edi($codigo_orden);
+        
         registrar('Nuevo contenedor (ID: <b>'.$codigo_orden.'</b>) en <b>'.$_POST['posicion_columna'].'-'.$_POST['posicion_fila'].'-'.$_POST['posicion_nivel'].'</b>','ingreso',$codigo_orden);
-        echo '<hr /><p class="opsal_notificacion">Contenedor ingresado exitosamente.</p><hr />';
+        echo 'ok';
     }
+    
+    
 }
 ?>

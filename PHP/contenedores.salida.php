@@ -1,3 +1,15 @@
+<?php
+$c = 'SELECT nombre FROM cheques WHERE flag_activo=1 ORDER BY nombre ASC';
+$r = db_consultar($c);
+$options_cheques = '<option selected="selected" value="">Seleccione uno</option>';
+if (mysqli_num_rows($r) > 0)
+{
+    while ($registro = mysqli_fetch_assoc($r))
+    {
+        $options_cheques .= '<option value="'.$registro['nombre'].'">'.$registro['nombre'].'</option>';
+    }
+}
+?>
 <form id="frm_salida" action="/contenedores.html?modo=salida" method="post" autocomplete="off">
 <input type="hidden" name="codigo_orden" id="codigo_orden" value="0" />
 <table class="tabla-estandar opsal_tabla_ancha">
@@ -51,13 +63,14 @@
         </tr>
         !-->
         
-        <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque_egreso" /></td></tr>
+        <tr><td>Cheque</td><td><select id="cheque" name="cheque_egreso"><?php echo $options_cheques; ?></select></td></tr>
         <tr><td>Transporte</td><td><input type="text" id="transportista" name="transportista_egreso" /></td></tr>
         <tr><td>Chofer</td><td><input type="text" value="" id="chofer_egreso" name="chofer_egreso" /></td></tr>
         
         <tr><td>Chasis</td><td><input type="text" value="" id="chasis" name="chasis_egreso" /></td></tr>
         <tr><td>Buque</td><td><input type="text" name="buque_egreso" id="buque_egreso" /></td></tr>
         <tr><td>Destino</td><td><input type="text" name="destino" id="destino" /></td></tr>
+        <tr><td>Booking</td><td><input type="text" value="" id="booking_number" name="booking_number" /></td></tr>
         <tr><td>Observaciones</td><td><textarea name="observaciones_egreso"></textarea></td></tr>
 
     </tbody>
@@ -65,7 +78,7 @@
 <hr />
 <p>Información: <span id="informacion"></span></p>
 <hr />
-<p>Afectados: <span id="afectados"></span></p>
+
 
 <input type="hidden" name="guardar" value="guardar" />
 <input type="submit" id="realizar_salida" value="Realizar salida de contenedor" /> <span id="indicador_de_envio"></span>
@@ -89,35 +102,9 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_egreso'];
 ?>
 <script type="text/javascript">
     
-    afectados = {};
     flag_posicion = false;
     nivel_deseado = 0;
-    
-    function propagar_virus(base,direccion)
-    {
-        if (direccion == 'izq')
-        {
-            objetos = base.prevUntil('td.contenedor_mapa_casilla_calle[nivel="0"]');
-        } else {
-            objetos = base.nextUntil('td.contenedor_mapa_casilla_calle[nivel="0"]');
-        }
-
-        $.each(objetos, function () {
-            if ($(this).attr('nivel') != '0')
-            {
-                if ($.inArray($(this).attr('grupo'),afectados[direccion]) == -1)
-                {
-                    afectados[direccion].push($(this).attr('grupo'));
-                    afectados[direccion+'Cant'] += parseInt($(this).attr('nivel'));
-                }
-                    
-                var grupo = $('div#contenedor_mapa table tbody tr td[grupo="'+$(this).attr('grupo')+'"]');   
-                grupo.addClass('contenedor_movimiento_afectado_'+direccion);
-                propagar_virus(grupo,direccion);
-            }
-        });
-    }
-    
+        
     function ejecutar_busqueda() {
         
         // Eliminamos los anteriores
@@ -157,17 +144,6 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_egreso'];
             grupo.addClass('contenedor_movimiento_origen');
 
             $('#informacion').html('');
-            $('#afectados').html('0');
-            
-            afectados.izq = [];
-            afectados.izqCant = 0;
-            afectados.der = [];
-            afectados.derCant = 0;
-            
-            //propagar_virus(grupo,'izq');
-            //propagar_virus(grupo,'der');
-            
-            console.log(afectados);
             
             $.post('ajax.buscar_contenedor.php',{columna:columna, fila:fila, nivel:nivel},function(data){
                 $("#datos_encontrados").html(data.resultados);
@@ -187,7 +163,6 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_egreso'];
 
         $( "#buque_egreso" ).autocomplete({source: ["<?php echo join('","', $tagsBuque) ;?>"]});
         $( "#transportista" ).autocomplete({source: ["<?php echo join('","', $tagsTransportista) ;?>"]});
-        $( "#cheque" ).autocomplete({source: ["<?php echo join('","', $tagsCheque) ;?>"]});
         $( "#chofer_egreso" ).autocomplete({source: ["<?php echo join('","', $tagsChofer) ;?>"]});
 
         
@@ -221,9 +196,9 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_egreso'];
                 return false;
             }
 
-            if ($("#cheque").val() == "")
+            if ($("select#cheque option:selected").val() == "")
             {
-                alert ("Ingrese el nombre del cheque.");
+                alert ("Seleccione un cheque.");
                 return false;
             }
 

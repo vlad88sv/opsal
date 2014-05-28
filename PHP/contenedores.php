@@ -1,17 +1,25 @@
 <?php
-if (empty($_GET['modo']))
-    $_GET['modo'] = 'ingreso';
+if (S_iniciado() && _F_usuario_cache('nivel') == 'agencia') {
+    $_GET['modo'] = 'agencia';
+} elseif (S_iniciado() && _F_usuario_cache('nivel') == 'externo') {
+    $_GET['modo'] = 'externo';
+} else {
+    if (empty($_GET['modo']))
+        $_GET['modo'] = 'ingreso';
 
-$menu[] = array('url' => '/contenedores.html','modo' => 'patio','titulo' => 'PATIO');
-$menu[] = array('url' => '/contenedores.html','modo' => 'ingreso','titulo' => 'RECEPCION');
-$menu[] = array('url' => '/contenedores.html','modo' => 'remociones','titulo' => 'REMOCION');
-$menu[] = array('url' => '/contenedores.html','modo' => 'remocion.bloque','titulo' => 'REMOCION BLOQUE');
-$menu[] = array('url' => '/contenedores.html','modo' => 'salida','titulo' => 'DESPACHO');
-$menu[] = array('url' => '/contenedores.html','modo' => 'salida.bloque','titulo' => 'DESPACHO BLOQUE');
+    $menu[] = array('url' => '/contenedores.html','modo' => 'patio','titulo' => 'PATIO');
+    $menu[] = array('url' => '/contenedores.html','modo' => 'ingreso','titulo' => 'RECEPCION');
+    $menu[] = array('url' => '/contenedores.html','modo' => 'remociones','titulo' => 'REMOCION');
+    $menu[] = array('url' => '/contenedores.html','modo' => 'remocion.bloque','titulo' => 'REMOCION BLOQUE');
+    $menu[] = array('url' => '/contenedores.html','modo' => 'salida','titulo' => 'DESPACHO');
+    $menu[] = array('url' => '/contenedores.html','modo' => 'salida.bloque','titulo' => 'DESPACHO BLOQUE');
 
-foreach ($menu AS $id => $datos)
-{
-    echo '<a class="opsal_pestaña '.($datos['modo'] == $_GET['modo'] ? 'opsal_pestaña_seleccionada' : '').'" href="'.$datos['url'].'?modo='.$datos['modo'].'">'.$datos['titulo'].'</a>';
+    foreach ($menu AS $id => $datos)
+    {
+        echo '<a class="opsal_pestaña '.($datos['modo'] == $_GET['modo'] ? 'opsal_pestaña_seleccionada' : '').'" href="'.$datos['url'].'?modo='.$datos['modo'].'">'.$datos['titulo'].'</a>';
+    }
+    
+    echo '<a class="opsal_pestaña" id="actualizar_mapa" style="float:right;font-weight:bold;color:white;" href="#">ACTUALIZAR</a>';
 }
 ?>
 <table id="opsal_ims" class="opsal_tabla_ancha" style="table-layout: fixed;">
@@ -38,6 +46,12 @@ switch ($_GET['modo'])
         break;
     case 'patio':
         require_once('PHP/contenedores.patio.php');
+        break;
+    case 'agencia':
+        require_once('PHP/contenedores.agencia.php');
+        break;
+    case 'externo':
+        require_once('PHP/contenedores.externo.php');
         break;
     default:
         echo '<p>No implementado</p>';
@@ -74,8 +88,7 @@ switch ($_GET['modo'])
     <div style="position: relative;float:left;width:732px;">
     
         <div id="contenedor_mapa" style="text-align:center;">
-            <p style="color:black;font-size:1.1em;">Actualizando mapa...</p><br />
-            <img src="/IMG/general/cargando.gif" />
+            <!-- aqui se carga el mapa !-->
         </div>
         <div id="contenedor_visual" style="position:absolute;background-color:#00FAFF;z-index:99;"></div>
     </div>
@@ -109,12 +122,17 @@ switch ($_GET['modo'])
 <script type="text/javascript">
     // Iniciemos el mapa
     function iniciar_mapa(opciones) {
+        var html = '<p style="color:black;font-size:1.1em;">Actualizando mapa...</p><br />';
+        html += '<img src="/IMG/general/cargando.gif" />';
+
+        $('#contenedor_mapa').html(html);
         opciones = typeof opciones !== 'undefined' ? opciones : {};
         $.post('ajax.mapa.php',opciones, function (data){
             var tiempo_inicio = new Date().getTime();
             $('#contenedor_mapa').html(data.mapa);
             $("#contenedor_mapa").trigger('mapa_iniciado',data);
             // Select all elements that are to share the same tooltip
+            /*
             var elems = $('#contenedor_mapa td');
      
             $('<div />').qtip(
@@ -146,6 +164,7 @@ switch ($_GET['modo'])
                             }
                     }
             });
+            */
             console.log('Mapa renderizado en ' + (new Date().getTime() - tiempo_inicio) + 'us');
         }, 'json');
     }
@@ -153,6 +172,19 @@ switch ($_GET['modo'])
     
     $(function(){
         iniciar_mapa();
+        
+        $('#contenedor_mapa').on('mouseover','td', function(event){
+            $(this).qtip({
+               overwrite: false,
+               content: { text: $(this).attr('qtip') },
+               style: { tip: "bottom right" },
+               position: { my: 'bottom right', at: 'top left', target: 'event', effect: false },
+               show: { delay:0, solo: true, event: event.type, ready: true },
+               hide: { delay: 0 }
+           }, event);
+        });
+        
+        $('#actualizar_mapa').click(function(){ iniciar_mapa(); });
         
         $('#opsal_mapa #contenedor_mapa table td').live('contextmenu',function(event){
             event.preventDefault();

@@ -11,7 +11,7 @@ $c = 'SELECT codigo_usuario, usuario FROM opsal_usuarios WHERE nivel="agencia" O
 $r = db_consultar($c);
 
 $agencias = array('' => 'todas las agencias');
-$options_agencia = '<option selected="selected" value="">Mostrar todas</option>';
+$options_agencia = '<option selected="selected" value="">'._('Mostrar todas').'</option>';
 if (mysqli_num_rows($r) > 0)
 {
   while ($registro = mysqli_fetch_assoc($r))
@@ -20,25 +20,31 @@ if (mysqli_num_rows($r) > 0)
     $agencias[$registro['codigo_usuario']] = $registro['usuario'];
   }
 }
-
-$tipo_salida = (!empty($_GET['tipo_salida']) ? ' AND tipo_salida="'.$_GET['tipo_salida'] .'"' : '');
-$agencia = (!empty($_GET['codigo_agencia']) ? ' AND codigo_agencia="'.$_GET['codigo_agencia'] .'"' : '');
-
-$c = 'SELECT CONCAT(\'<a href="#" rel="\',codigo_contenedor,\'" class="ejecutar_busqueda_codigo_contenedor">\',`codigo_contenedor`,\'</a>\') AS "Contenedor", tipo_contenedor AS "Tipo", CONCAT( x2,  "-", y2,  "-", nivel ) AS "Posición", DATE(  `fechatiempo_ingreso` ) AS  "Ingreso", (DATEDIFF( fechatiempo_egreso,  `fechatiempo_ingreso` ) + 1) AS "<acronym title=\'Días en patio\'>DEA</acronym>", DATE( `fechatiempo_egreso` ) AS  "Salida", arivu_referencia AS "# ARIVU", ( `arivu_ingreso` + INTERVAL 90 DAY) AS "Expiración ARIVU", DATEDIFF(  `arivu_ingreso` + INTERVAL 90 DAY, COALESCE(fechatiempo_egreso,NOW()) ) AS  "<acronym title=\'Días para expiración de ARIVU\'>DPEA</acronym>", `transportista_egreso` AS "Transportista", `buque_egreso` AS "Buque", tipo_salida AS "Tipo salida", `observaciones_egreso` AS "Observaciones" FROM  `opsal_ordenes` AS t1 LEFT JOIN  `opsal_posicion` AS t2 USING ( codigo_posicion ) WHERE t1.fechatiempo_egreso IS NOT NULL AND DATE(t1.fechatiempo_egreso) BETWEEN "'.$fecha_inicio.'" AND "'.$fecha_final.'" '.$agencia . $tipo_salida .' ORDER BY fechatiempo_egreso';
-$r = db_consultar($c);
 ?>
 <div class="noimprimir">
-  <h1>Control de salidas</h1>
+  <h1><?php echo _('Control de salidas'); ?></h1>
     <form action="" method="get">
-        Fecha inicio: <input type="text" class="calendario" name="fecha_inicio" value="<?php echo $fecha_inicio; ?>" /> Fecha final: <input type="text" class="calendario" name="fecha_final" value="<?php echo $fecha_final; ?>" /> | Agencia: <select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select> | Tipo: <select name="tipo_salida"><option value="">Cualquiera</option><option value="terrestre">Terrestre</option><option value="embarque">Embarque</option></select> <input type="submit" value="Filtrar" />
+        <?php if (S_iniciado() && _F_usuario_cache('nivel') == 'agencia') { 
+          $_GET['codigo_agencia'] = _F_usuario_cache('codigo_usuario');
+        ?>
+        <?php echo _('Fecha inicio:'); ?> <input type="text" class="calendario" name="fecha_inicio" value="<?php echo $fecha_inicio; ?>" /> <?php echo _('Fecha final:'); ?> <input type="text" class="calendario" name="fecha_final" value="<?php echo $fecha_final; ?>" /> | <?php echo _('Tipo:'); ?> <select name="tipo_salida"><option value=""><?php echo _('Cualquiera'); ?></option><option value="terrestre"><?php echo _('Terrestre'); ?></option><option value="embarque"><?php echo _('Embarque'); ?></option></select> <input type="submit" value="<?php echo _('Filtrar'); ?>" />
+        <? } else { ?>
+        <?php echo _('Fecha inicio:'); ?> <input type="text" class="calendario" name="fecha_inicio" value="<?php echo $fecha_inicio; ?>" /> <?php echo _('Fecha final:'); ?> <input type="text" class="calendario" name="fecha_final" value="<?php echo $fecha_final; ?>" /> | Agencia: <select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select> | <?php echo _('Tipo:'); ?> <select name="tipo_salida"><option value=""><?php echo _('Cualquiera'); ?></option><option value="terrestre"><?php echo _('Terrestre'); ?></option><option value="embarque"><?php echo _('Embarque'); ?></option></select> <input type="submit" value="<?php echo _('Filtrar'); ?>" />
+        <?php } ?>
+        
     </form>
     <hr />
     <br />
 </div>
 <?php
-$fechas = ($fecha_inicio == $fecha_final ? 'del <b>' . $fecha_inicio . '</b>' : 'de <b>'.$fecha_inicio.'</b> a <b>'.$fecha_final.'</b>');
-$titulo = 'Reporte de <b>'.mysqli_num_rows($r).'</b> despachos '.$fechas.' para <b>'.$agencias[@$_GET['codigo_agencia']].'</b>';
+$tipo_salida = (!empty($_GET['tipo_salida']) ? ' AND tipo_salida="'.$_GET['tipo_salida'] .'"' : '');
+$agencia = (!empty($_GET['codigo_agencia']) ? ' AND codigo_agencia="'.$_GET['codigo_agencia'] .'"' : '');
 
+$c = 'SELECT CONCAT(\'<a href="#" rel="\',codigo_contenedor,\'" class="ejecutar_busqueda_codigo_contenedor">\',`codigo_contenedor`,\'</a>\') AS "'._('Contenedor').'", tipo_contenedor AS "'._('Tipo').'",  clase AS "'._('Clase').'", CONCAT( x2,  "-", y2,  "-", nivel ) AS "'._('Posición').'", DATE(  `fechatiempo_ingreso` ) AS  "'._('Ingreso').'", (DATEDIFF( fechatiempo_egreso,  `fechatiempo_ingreso` ) + 1) AS "<acronym title=\''._('Días en patio').'\'>'._('DEA').'</acronym>", DATE( `fechatiempo_egreso` ) AS  "'._('Salida').'", arivu_referencia AS "# ARIVU", CONCAT(`arivu_ingreso`, " - " , `arivu_ingreso` + INTERVAL 89 DAY) AS "ARIVU", DATEDIFF(  `arivu_ingreso` + INTERVAL 89 DAY, COALESCE(fechatiempo_egreso,NOW()) ) AS  "<acronym title=\''._('Días para expiración de ARIVU').'\'>'._('DPEA').'</acronym>", `transportista_egreso` AS "'._('Transportista').'",`chofer_egreso` AS "'._('Chofer').'", `buque_egreso` AS "'._('Buque').'", tipo_salida AS "'._('Tipo salida').'", `booking_number` AS "Booking", `observaciones_egreso` AS "'._('Observaciones').'" FROM  `opsal_ordenes` AS t1 LEFT JOIN  `opsal_posicion` AS t2 USING ( codigo_posicion ) WHERE t1.fechatiempo_egreso IS NOT NULL AND DATE(t1.fechatiempo_egreso) BETWEEN "'.$fecha_inicio.'" AND "'.$fecha_final.'" '.$agencia . $tipo_salida .' ORDER BY  `codigo_contenedor` ASC';
+$r = db_consultar($c);
+
+$fechas = ($fecha_inicio == $fecha_final ? 'del <b>' . $fecha_inicio . '</b>' : 'de <b>'.$fecha_inicio.'</b> a <b>'.$fecha_final.'</b>');
+$titulo = sprintf(_('Reporte de <b>%s</b> despachos %s para <b>%s</b>'),mysqli_num_rows($r), $fechas, $agencias[@$_GET['codigo_agencia']]);
 
 echo '<div class="exportable" rel="'.strip_tags($titulo).'">';
 echo '<h1>'.$titulo.'</h1>';
@@ -48,8 +54,8 @@ echo '</div>';
 
 echo '<br />';
 echo '<div class="exportable">';
-echo '<h2>Deglose por tamaño de contenedor</h2>';
-$c = 'SELECT tipo_contenedor AS "Tipo", COUNT(*) AS "Cantidad" FROM `opsal_ordenes` AS t1 WHERE t1.fechatiempo_egreso IS NOT NULL AND DATE(t1.fechatiempo_egreso) BETWEEN "'.$fecha_inicio.'" AND "'.$fecha_final.'" '.$agencia .' '.$tipo_salida.' '.$embarque.' GROUP BY tipo_contenedor' ;
+echo _('<h2>Deglose por tamaño de contenedor</h2>');
+$c = 'SELECT tipo_contenedor AS "'._('Tipo').'", COUNT(*) AS "'._('Cantidad').'" FROM `opsal_ordenes` AS t1 WHERE t1.fechatiempo_egreso IS NOT NULL AND DATE(t1.fechatiempo_egreso) BETWEEN "'.$fecha_inicio.'" AND "'.$fecha_final.'" '.$agencia .' '.$tipo_salida.' GROUP BY tipo_contenedor' ;
 $r = db_consultar($c);
 echo db_ui_tabla($r,'class="tabla-estandar opsal_tabla_ancha opsal_tabla_borde_oscuro"');
 echo '</div>';

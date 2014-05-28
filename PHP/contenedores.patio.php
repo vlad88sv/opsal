@@ -54,6 +54,9 @@ if (mysqli_num_rows($r) > 0)
 
         <input type="radio" name="tipo_contenedor" id="clase_ot" value="OT"/>
         <label for="clase_ot">OT</label>&nbsp;
+
+        <input type="radio" name="tipo_contenedor" id="clase_ho" value="HO"/>
+        <label for="clase_ho">OTHC</label>&nbsp;
         
         <input type="radio" name="tipo_contenedor" id="clase_rf" value="RF"/>
         <label for="clase_rf">RF</label>&nbsp;
@@ -95,10 +98,87 @@ if (mysqli_num_rows($r) > 0)
         </tr>
     </tbody>
 </table>
+<hr />
+<h1>Información</h1>
+<p>Afectados izq: <span id="afectadosIzq"></span></p>
+<p>Afectados der: <span id="afectadosDer"></span></p>
+
 <input type="hidden" name="filtrar" value="filtrar" />
 <input type="submit" id="filtrar" value="Filtrar" /> <span id="resultados"></span>
 </form>
-<script type="text/javascript">    
+<script type="text/javascript">
+    afectados = {};
+    
+    function propagar_virus(base,direccion)
+    {
+        if (direccion == 'izq')
+        {
+            objetos = base.prevUntil('td[nivel="0"]');
+        } else {
+            objetos = base.nextUntil('td[nivel="0"]');
+        }
+
+        $.each(objetos, function () {
+            if ($(this).attr('nivel') != '0')
+            {
+                if ($.inArray($(this).attr('grupo'),afectados[direccion]) == -1)
+                {
+                    afectados[direccion].push($(this).attr('grupo'));
+                    afectados[direccion+'Cant'] += parseInt($(this).attr('nivel'));
+                }
+                    
+                var grupo = $('div#contenedor_mapa table tbody tr td[grupo="'+$(this).attr('grupo')+'"]');   
+                grupo.addClass('contenedor_movimiento_afectado_'+direccion);
+                propagar_virus(grupo,direccion);
+            }
+        });
+    }
+    
+    function ejecutar_busqueda(columna, fila, nivel) {
+        
+                
+        if (columna == "" || fila == "" || nivel == "")
+        {
+            $("#datos_encontrados").html('Faltan datos para ubicar contenedor');
+            return false;
+        }
+        
+        ubicacion = $('div#contenedor_mapa table tbody tr td[col="'+columna+'"][fila="'+fila+'"]');
+    
+        if (ubicacion.length > 0)
+        {
+            ubicacion_nivel = parseInt(ubicacion.attr('nivel'));
+            if ( ubicacion_nivel < nivel )
+            {
+                $("#datos_encontrados").html('No hay contenedores en ese nivel.');
+                return false;
+            }
+            
+            if ( ubicacion_nivel == 0 || nivel == 0)
+            {
+                $("#datos_encontrados").html('No hay contenedores en esa ubicación.');
+                return false;
+            }
+            
+            // Exito                
+            var grupo = $('div#contenedor_mapa table tbody tr td[grupo="'+ubicacion.attr('grupo')+'"]');
+           
+            
+            afectados.izq = [];
+            afectados.izqCant = 0;
+            afectados.der = [];
+            afectados.derCant = 0;
+            
+            propagar_virus(grupo,'izq');
+            propagar_virus(grupo,'der');
+            
+            $("#afectadosIzq").html(afectados.izqCant);
+            $("#afectadosDer").html(afectados.derCant);       
+            
+        
+        }
+    }
+
     $(function(){
         color = 'black';
         setInterval(function() {
@@ -121,6 +201,22 @@ if (mysqli_num_rows($r) > 0)
         $( "#tamano_contenedor input[type='radio']" ).button();
         $( "#tipo_contenedor input[type='radio']" ).button();
         
+        $('#opsal_mapa #contenedor_mapa table td').live('click',function(){
+            
+            if ($(this).attr('afinidad') == 'libre')
+            {
+                alert('No existen contenedores en esta ubicación.');
+                return false;
+            }
+            
+            if ($(this).hasClass('contenedor_zona_muerta'))
+            {
+                alert('Seleccionar el contenedor desde el punto de origen.');
+                return false;
+            }
+                       
+            ejecutar_busqueda( $(this).attr('col'), $(this).attr('fila'), parseInt($(this).attr('nivel')) );
+        });
         
     });
 </script>

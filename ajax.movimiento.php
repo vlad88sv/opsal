@@ -6,6 +6,13 @@ require_once (__PHPDIR__."vital.php");
 if (isset($_POST['guardar']))
 {
     $codigo_agencia = $_POST['codigo_agencia'];
+
+    if ( empty($codigo_agencia) )
+    {
+        echo 'detalle: no hay codigo de agencia';
+        return;
+    }
+
     
     // Obtengamos el codigo_posicion de origen
     $c_posicion = 'SELECT codigo_posicion FROM opsal_posicion WHERE x2="'.$_POST['posicion_columna'].'" AND y2="'.$_POST['posicion_fila'].'"';
@@ -45,12 +52,14 @@ if (isset($_POST['guardar']))
         $DATOS['nivel'] = $_POST['posicion_nivel'];
         $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');
         $DATOS['motivo'] = 'remocion';
+        $DATOS['flag_traslado'] = $_POST['traslado'];
+        $DATOS['observacion'] = $_POST['observaciones'];
         
         db_agregar_datos('opsal_movimientos',$DATOS);
         
         registrar('Contenedor (ID: <b>'.$codigo_orden.'</b>) cambió de <b>'.$_POST['posicion_columna'].$_POST['posicion_fila'].'-'.$_POST['posicion_nivel'].'</b> a <b>'.$_POST['posicion_columna_2'].$_POST['posicion_fila_2'].'-'.$_POST['posicion_nivel_2'].'</b>','movimiento',$codigo_orden);
         
-        echo '<hr /><p class="opsal_notificacion">Contenedor movido exitosamente.</p><hr />';
+        echo 'ok';
     }
 }
 ?>

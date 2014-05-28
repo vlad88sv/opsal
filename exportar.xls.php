@@ -1,5 +1,6 @@
 <?php
 require_once('config.php');
+require_once (__PHPDIR__."vital.php");
 header("Content-type: application/vnd.ms-excel; name='excel'");
 header('Content-Disposition: filename="'.urldecode($_POST['archivo']).'.xls"');
 header("Pragma: no-cache");
@@ -64,13 +65,18 @@ th
 </head>
 <body>
 <?php
-    $html = strip_tags(urldecode(@$_POST['data']),'<div><table><p><tr><th><tbody><thead><td><h1><h2>');
+    $html = urldecode(@$_POST['data']);
+    $html = strip_tags($html,'<div><table><p><tr><th><tbody><thead><td><h1><h2>');
     
     require_once('PHP/cssi/css_to_inline_styles.php');
     
+
     $cssToInlineStyles = new CSSToInlineStyles($html);
     $cssToInlineStyles->setUseInlineStylesBlock(true);
-    $cssToInlineStyles->setCleanup(true);
-    echo html_entity_decode(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', '<h1>'.PROY_EMPRESA.'</h1>'.$cssToInlineStyles->convert()));
+    //$cssToInlineStyles->setCleanup(true);
+    
+    $html_final = $html;
+    $cssToInlineStyles = $html;
+    echo html_entity_decode(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', '<div style="text-align:center;"><img src="'.PROY_URL.'IMG/stock/logo_OPSAL_mini.jpg"></div><br /><br /><br /><br /><br /><h1>'.PROY_EMPRESA.'</h1>'.$html_final));
 ?>
 </body>

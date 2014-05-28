@@ -1,22 +1,97 @@
-<?php if (memcache_iniciar(__FILE__,@$_SESSION)) return; ?>
 <table style="width:100%;">
 <tbody>
 <tr>
-<td><a href="/"><img src="/IMG/general/cabecera.jpg" /></a></td>
-<td><input type="text" id="traducir" style="width:50px" value="" /><input id="ejecutar_traduccion" type="button" value="->"  style="padding:0px" /><input type="text" id="traducido" style="width:50px" value="" /></td>
+<td>
+    <a href="/">
+<?php
+switch (MODO)
+{
+    case MODO_MYR:
+        echo '<img src="/IMG/general/cabecera_myr.png" />';
+        break;
+    
+    case MODO_OCY:
+    default:
+        echo '<img src="/IMG/general/cabecera.jpg" />';
+        break;
+}
+?>
+    </a>
+</td>
+<td>
+
+    <?php if (S_iniciado() && _F_usuario_cache('nivel') == 'tecnico'): ?>
+    <input type="text" id="traducir" style="width:50px" value="" /><input id="ejecutar_traduccion" type="button" value="->"  style="padding:0px" /><input type="text" id="traducido" style="width:50px" value="" />
+    <?php endif; ?>
+
+</td>
 <td style="text-align: right;">
+<img style="vertical-align: middle;" class="cambio_lenguaje" rel="es_SV" title="Cambiar idioma a español" src="/IMG/stock/flag_sv.png" />
+<img style="vertical-align: middle;" class="cambio_lenguaje" rel="en_US" title="Cambiar idioma a inglés" src="/IMG/stock/flag_us.png" />
 <?php if (S_iniciado()): ?>
 <img style="vertical-align: middle;" title="Imprimir esta vista" onclick="window.print()" src="/IMG/general/imprimir.gif" />
-<a class="boton" href="/finalizar.html">Cerrar Sesión</a>
+<a class="boton" href="/finalizar.html">Cerrar sesión</a>
 <?php endif; ?>
 </td>
 </tr>
 </tbody>
 </table>
 <?php
-if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
+if (!S_iniciado())
 {
     echo '<hr />';
+    return;
+}
+
+
+// ************ traducible ******* //
+if (S_iniciado() && _F_usuario_cache('nivel') == 'agencia')
+{
+    echo '
+    <ul id="nav" class="dropdown dropdown-horizontal">
+    <li><a href="/" title="'._('Contenedores').'">'._('Contenedores').'</a></li>
+    
+    <li><a href="#" onclick="return false;" title="'._('Módulo de reportes').'">'._('Reportes').'</a>
+    <ul>
+	<li><a href="/control.patio.html" title="'._('Control patio').'">'._('Reporte de patio').'</a>
+	<li><a href="/control.ingresos.html" title="'._('Control ingresos').'">'._('Reporte recepciones').'</a>
+	<li><a href="/control.remociones.html" title="'._('Control remociones').'">'._('Reporte remociones').'</a>
+	<li><a href="/control.embarques.html" title="'._('Control embarques').'">'._('Reporte embarques').'</a>
+	<li><a href="/control.salidas.html" title="'._('Control salidas').'">'._('Reporte despachos').'</a>
+        <li><a href="/control.combinado.html" title="'._('Control combinado (ingresos+salidas)').'">'._('Reporte combinado').'</a>            
+    </ul>
+    </li>
+    
+    <li><a href="/contenedores.html" title="'._('Módulo de patio').'">'._('Patio').'</a></li>
+    
+    <li id="buscador">
+    <form id="frm_buscar">
+	<input name="busqueda" type="text" id="busqueda" value="" />
+	<input type="submit" id="buscar" value="Búscar" />
+    </form>
+    </li>
+    </ul>
+    ';
+    return;
+}
+// ************ traducible ******* //
+
+if (S_iniciado() && _F_usuario_cache('nivel') == 'externo')
+{
+    echo '
+    <ul id="nav" class="dropdown dropdown-horizontal">
+    <li><a href="/control.patio.html" title="'._('Control patio').'">'._('Reporte de patio').'</a></li>
+    <li><a href="/contenedores.html" title="'._('Módulo de patio').'">'._('Patio').'</a></li>
+    
+    
+    <li id="buscador">
+    <form id="frm_buscar">
+	<input name="busqueda" type="text" id="busqueda" value="" />
+	<input type="submit" id="buscar" value="Búscar" />
+    </form>
+    </li>
+    </ul>
+    ';
     return;
 }
 ?>
@@ -26,11 +101,14 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
     <ul>
         <li><a href="/control.salidas.bloque.html" title="Salidas en bloque">Reporte salidas en bloque</a>
 	<li><a href="/control.patio.html" title="Control patio">Reporte de patio</a>
+        <li><a href="/control.combinado.html" title="Control combinado (ingresos+salidas)">Reporte combinado</a>
 	<li><a href="/control.ingresos.html" title="Control ingresos">Reporte recepciones </a>
 	<li><a href="/control.remociones.html" title="Control remociones">Reporte remociones</a>
+	<li><a href="/control.doble.movimientos.html" title="Control doble movimientos">Reporte doble movimientos</a>
 	<li><a href="/control.embarques.html" title="Control embarques">Reporte embarques</a>
 	<li><a href="/control.salidas.html" title="Control salidas">Reporte despachos</a>
-	<!--<li><a href="/control.sinfacturar.html" title="Detector de periodos no facturados">Sin facturar</a>!-->
+	<li><a href="/control.consolidado.html" title="Consolidado de año">Consolidado de año</a>
+	<li><a href="/control.consolidado.agencia.html" title="Consolidado de agencia">Consolidado de agencia</a>
     </ul>
 </li>
 <li><a href="/elaboracion.de.condicion.html" title="Módulo de contenedores">E. Condición</a>
@@ -39,136 +117,52 @@ if (!S_iniciado() || _F_usuario_cache('nivel') == 'agencia')
     </ul>
 </li>
 <li><a href="/supervision.carga.descarga.html" title="Supervisión de carga y descarga">Supervisión OPS C/D</a>
+    <?php if (_F_usuario_cache('nivel') == 'jefatura'): ?>
     <ul>
-	<li><a href="/control.supervision.carga.descarga.html" title="Reporte de supervisión de carga y descarga">Obtener reporte</a>
+	<li><a href="/control.supervision.carga.descarga.html">Reportes y facturación</a>
+    </ul>
+    <?php endif; ?>
+</li>
+<li><a href="/lineas.de.amarre.html" title="Módulo de contenedores">Líneas de amarre</a>
+    <ul>
+        <li><a href="/control.lineas.de.amarre.html" title="Control de líneas de amare">Control</a></li>
     </ul>
 </li>
-<li><a href="/lineas.de.amarre.html" title="Módulo de contenedores">Líneas de amarre</a></li>
+
+<?php if (_F_usuario_cache('nivel') != 'jefatura' && _F_usuario_cache('modulo_facturar') == '1'): ?>
+<li><a href="/facturacion.html" title="Módulo de facturacion">Facturación</a>
+<?php endif; ?>
+
+<?php if (_F_usuario_cache('nivel') == 'jefatura'): ?>
 <li><a href="/facturacion.html" title="Módulo de facturacion">Facturación</a>
     <ul>
-        <li><a href="/control.facturas.html" title="Control de facturas">Control</a>
-	<!--<li><a href="/control.sinfacturar.html" title="Detector de periodos no facturados">Sin facturar</a>!-->
+        <li><a href="/control.facturas.html" title="Control de facturas">Control</a></li>
+	<li><a href="/control.estado.de.cuenta.html" title="Estado de cuenta">Estado de cuenta</a></li>
+        <li><a href="/control.contador.html" title="Reporte contaduría">Reporte contaduría</a></li>
+        <li><a href="/facturacion.personalizada.html" title="Facturas inventadas">Inventar factura</a></li>
     </ul>
 </li>
 <li><a href="/administracion.html" title="Módulo de contenedores">Administrador</a>
     <ul>
-        <li><a href="/reportes.html" title="Reportes">Estadísticas</a>
-	<li><a href="/bitacora.html" title="Bitácora">Bitacora</a>
+        <li><a href="/reportes.html" title="Reportes">Estadísticas</a></li>
+	<li><a href="/bitacora.html" title="Bitácora">Bitacora</a></li>
+        <li><a href="/especial.cambiar.buque.html" title="Bitácora">Cambio de buque</a></li>
     </ul>
 </li>
+<?php else: ?>
+<li><a href="/reportes.html" title="Reportes">Estadísticas</a></li>
+<li><a href="/bitacora.html" title="Bitácora">Bitacora</a></li>
+<?php endif; ?>
 
 <li id="buscador">
-    <input name="busqueda" type="text" id="busqueda" value="" />
-    <input type="button" id="buscar" value="Búscar" />
+    <form id="frm_buscar">
+	<input name="busqueda" type="text" id="busqueda" value="" />
+	<input type="submit" id="buscar" value="Búscar" />
+    </form>
 </li>
 </ul>
-<script type="text/javascript">
-    function ejecutar_busqueda_codigo_contenedor(codigo_contenedor)
-    {
-	$.facebox({ ajax: '/ajax.ContenedorPorCodigo.php?busqueda=' + codigo_contenedor });
-    }
-    
-    $(function(){
-	jQuery.download = function(url, data, method){
-	    //url and data options required
-	    if( url && data ){ 
-		    //data can be string of parameters or array/object
-		    data = typeof data == 'string' ? data : jQuery.param(data);
-		    //split params into form inputs
-		    var inputs = '';
-		    jQuery.each(data.split('&'), function(){ 
-			    var pair = this.split('=');
-			    inputs+='<input type="hidden" name="'+ pair[0] +'" value="'+ pair[1] +'" />'; 
-		    });
-		    //send request
-		    jQuery('<form action="'+ url +'" method="'+ (method||'post') +'">'+inputs+'</form>')
-		    .appendTo('body').submit().remove();
-	    };
-	};
-    
-	$('.exportable').live('mouseenter', function(){
-	    $(this).addClass('exportable_vivo');
-	    $(this).prepend('<div class="exportable_ctrl"><b style="color:red;">Exportar este repote:</b> <button class="exportar_pdf">PDF</button><button class="exportar_xls">EXCEL</button><button class="exportar_doc">WORD</button><button class="exportar_correo">CORREO</button></div>');
-	});
-	
-	$('.exportable').live('mouseleave', function(){
-	    $(this).removeClass('exportable_vivo');
-	    $(this).find('.exportable_ctrl').remove();
-	});
-	
-	$('.exportable_ctrl .exportar_xls').live('click', function() {
-	    var exportable = $(this).parents('.exportable');
-	    exportable.find('.exportable_ctrl').remove();
-	    var data = encodeURIComponent(exportable.html());
-	    //console.log(data);
-	    $.download('/exportar.xls.php', 'archivo='+encodeURIComponent(exportable.attr('rel') || 'reporte')+'&data=' + data);
-	});
-
-	$('.exportable_ctrl .exportar_doc').live('click', function() {
-	    var exportable = $(this).parents('.exportable');
-	    exportable.find('.exportable_ctrl').remove();
-	    var data = encodeURIComponent(exportable.html());
-	    //console.log(data);
-	    $.download('/exportar.doc.php', 'archivo='+encodeURIComponent(exportable.attr('rel') || 'reporte')+'&data=' + data);
-	});
-	
-	$('.exportable_ctrl .exportar_pdf').live('click', function() {
-	    var exportable = $(this).parents('.exportable');
-	    exportable.find('.exportable_ctrl').remove();
-	    var data = encodeURIComponent(exportable.html());
-	    //console.log(data);
-	    $.download('/exportar.pdf.php', 'archivo='+encodeURIComponent(exportable.attr('rel') || 'reporte')+'&data=' + data);
-	});
-	
-	$(document).bind('reveal.facebox', function() {
-	    if ($("#drop_target").length == 0)
-	    {
-		$("button.bq_usar_contenedor").attr('disabled','disabled');
-		$("a.bq_usar_contenedor").remove();
-	    }
-	});
-	
-	$("#ver_historial").live('click', function(){
-	    window.location = '/historial.html?ID='+$(this).attr('rel');
-	});
-	
-        $('.ejecutar_busqueda_codigo_contenedor').live('click',function(event){
-	    event.preventDefault();
-            ejecutar_busqueda_codigo_contenedor($(this).attr('rel'));
-        });
-	
-	$(".bq_usar_contenedor").live('click', function(event){
-	    event.preventDefault();
-	    $("#drop_target #posicion_columna").val($(this).attr('col'));
-	    $("#drop_target #posicion_fila").val($(this).attr('fila'));
-	    $("#drop_target #posicion_nivel").val($(this).attr('nivel'));
-	    $(".posicion").trigger('change');
-	});
-	
-	$(".bq_eliminar_despacho").live('click', function(event){
-	    if (confirm('¿Realmente desea eliminar este despacho?.\nNo podrá deshacer esta acción.'))
-	    {
-		$.post('ajax.seguro.php',{accion:'eliminar_despacho', ID:$(this).attr('rel')}, function(){
-		    alert('Se ha eliminado el despacho.');
-		});
-	    }
-	});
-	
-	$('#ejecutar_traduccion').click(function(){
-	    $.post('ajax.traducir.php',{traducir:$("#traducir").val()}, function(data){
-		$("#traducido").val(data);
-	    });
-	    
-	});
-
-	$('#buscar').click(function(){    
-	    ejecutar_busqueda_codigo_contenedor ($('#busqueda').val());
-	});
-    });
-</script>
 <noscript>
 <div style="background-color:#fef1b9;font-size:14px;padding:10px;border-radius:10px;margin:10px 0px;text-align: center;">
 Advertencia: su navegador no posee <b>JavaScript</b>, por lo que su experiencia no será óptima.<br />
 </div>
 </noscript>
-<?php echo memcache_finalizar(__FILE__,@$_SESSION); ?>

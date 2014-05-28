@@ -30,7 +30,7 @@ if ($resultado && mysqli_num_rows($resultado) > 0)
 //***********
 
 $c_ordenes = "
-SELECT t4.`usuario` AS 'nombre_agencia', t3.`x` , t3.`y` , t3.`x2`, t3.`y2`, t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , `clase` , `tara` , `chasis` , `transportista_ingreso` , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', `arivu_ingreso`, DATEDIFF(NOW(), `arivu_ingreso`) AS 'dias_arivu' , `ingresado_por` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , (DATEDIFF(NOW(), `fechatiempo_ingreso`) + 1) AS 'dias_ingreso', `fechatiempo_egreso`
+SELECT t4.`usuario` AS 'nombre_agencia', t3.`x` , t3.`y` , t3.`x2`, t3.`y2`, t1.`nivel`, `codigo_orden` , `codigo_contenedor` , `tipo_contenedor` , t2.`visual` , t2.`cobro` , t2.`afinidad`, t2.`nombre`, `codigo_agencia` , `codigo_posicion` , `clase` , `tara` , `chasis` , `transportista_ingreso`, `chofer_ingreso`  , `transportista_egreso` , `buque_ingreso` , `buque_egreso` , `cheque_ingreso` , `cheque_egreso` , `cepa_salida` , DATEDIFF(NOW(), `cepa_salida`) AS 'dias_cepa', `arivu_ingreso`, DATEDIFF(NOW(), `arivu_ingreso`) AS 'dias_arivu' , `ingresado_por` , `observaciones_egreso` , `observaciones_ingreso` , `destino` , `estado` , `fechatiempo_ingreso` , (DATEDIFF(NOW(), `fechatiempo_ingreso`) + 1) AS 'dias_ingreso', `fechatiempo_egreso`
 FROM `opsal_ordenes` AS t1
 LEFT JOIN `opsal_tipo_contenedores` AS t2
 USING ( tipo_contenedor )
@@ -42,7 +42,6 @@ WHERE `estado` = 'dentro'
 ";
 $r_ordenes = db_consultar($c_ordenes);
 
-//error_log('Ordenes encontradas: '.mysqli_num_rows($r_ordenes));
 if (mysqli_num_rows($r_ordenes) > 0)
 {
     while ($f_ordenes = mysqli_fetch_assoc($r_ordenes))
@@ -142,6 +141,10 @@ if (isset($_POST['filtrar']))
         $tfiltros[] = 'AND codigo_agencia = ' . $_POST['codigo_agencia'];
     }
     
+    if (S_iniciado() && _F_usuario_cache('nivel') == 'agencia') {
+        $tfiltros[] = 'AND codigo_agencia = ' . _F_usuario_cache('codigo_usuario');
+    }
+
     if (isset($_POST['clase']))
     {
         $tfiltros[] = 'AND clase IN ("'.join('","',$_POST['clase']).'")';
@@ -219,7 +222,7 @@ if (isset($_POST['filtrar']))
                     if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     $mapa[$xy]['texto'] = (empty($mapa[$xy]['texto'])? 1 : $mapa[$xy]['texto'] + 1);
                     
-                    $xy = $f_ordenes['x'].'.'.($f_ordenes['y']+1);
+                    $xy = $f_ordenes['x'].'.'.($f_ordenes['y']-1);
                     if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     break;
                     
@@ -228,10 +231,10 @@ if (isset($_POST['filtrar']))
                     if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
                     $mapa[$xy]['texto'] = (empty($mapa[$xy]['texto'])? 1 : $mapa[$xy]['texto'] + 1);
                     
-                    $xy = $f_ordenes['x'].'.'.($f_ordenes['y']+1);
+                    $xy = $f_ordenes['x'].'.'.($f_ordenes['y']-1);
                     if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;
     
-                    $xy = $f_ordenes['x'].'.'.($f_ordenes['y']+2);
+                    $xy = $f_ordenes['x'].'.'.($f_ordenes['y']-2);
                     if ($f_ordenes['filtrado'] == '1') $mapa[$xy]['filtrado'] = 1;                    
                     break;
             }
@@ -280,9 +283,20 @@ for ($y=36; $y > 0; $y--)
                 $qtip .= '<table class="tabla-estandar opsal_tabla_ancha opsal_tabla_borde_oscuro">';
                 $qtip .= '<tr><td>Ingreso</td><td>'.$mapa[$xy]['datos'][$kNivel]['fechatiempo_ingreso'].'</b> <b>['.$mapa[$xy]['datos'][$kNivel]['dias_ingreso'].' días]</td></tr>';
                 $qtip .= '<tr><td>Contenedor</td><td>'.$mapa[$xy]['datos'][$kNivel]['codigo_contenedor'].'</td></tr>';
+                $qtip .= '<tr><td>Transporte</td><td>'.$mapa[$xy]['datos'][$kNivel]['transportista_ingreso'].' ['.$mapa[$xy]['datos'][$kNivel]['chofer_ingreso'].']</td></tr>';
                 $qtip .= '</table>';
                 $qtip .= '</div>';
             }
+            
+            // Violamos el nivel y borramos el qtip si sucede que lo esta viendo
+            // la agencia, asi no puede ver información de otros mas que donde
+            // estan ubicados los demas contenedores.
+            if (S_iniciado() && _F_usuario_cache('nivel') == 'agencia' && ( $mapa[$xy]['datos'][$kNivel]['codigo_agencia'] !=  _F_usuario_cache('codigo_usuario') ))
+            {
+                $nivel = 'X';
+                $qtip = '';
+            }
+            
         }              
         
         $clases_especiales = ' ';

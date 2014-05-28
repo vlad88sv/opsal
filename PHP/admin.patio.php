@@ -13,6 +13,7 @@
                 <option value="normal">Normal</option>
                 <option value="extra">Extra</option>
                 <option value="restringido">Restringido</option>
+                <option value="taller">Taller</option>
             </select>
         </td>
     </tr>

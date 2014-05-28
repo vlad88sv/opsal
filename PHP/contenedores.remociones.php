@@ -10,15 +10,36 @@ if (mysqli_num_rows($r) > 0)
         $options_agencia .= '<option value="'.$registro['codigo_usuario'].'">'.$registro['usuario'].'</option>';
     }
 }
+
+$c = 'SELECT nombre FROM cheques WHERE flag_activo=1 ORDER BY nombre ASC';
+$r = db_consultar($c);
+$options_cheques = '<option selected="selected" value="">Seleccione uno</option>';
+if (mysqli_num_rows($r) > 0)
+{
+    while ($registro = mysqli_fetch_assoc($r))
+    {
+        $options_cheques .= '<option value="'.$registro['nombre'].'">'.$registro['nombre'].'</option>';
+    }
+}
 ?>
 <form id="frm_movimiento_contenedores" action="/contenedores.html?modo=remociones" method="post" autocomplete="off">
 <table class="tabla-estandar opsal_tabla_ancha">
     <tbody>
         <tr><td>Cobrar a</td><td><select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select></td></tr>
         
-        <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque" /></td></tr>
+        <tr><td>Cheque</td><td><select id="cheque" name="cheque"><?php echo $options_cheques; ?></select></td></tr>
         
-        <tr><td>Fecha</td><td><input type="text" class="calendariocontiempo" value="" name="fechatiempo" /></td></tr>
+        <tr><td>Fecha</td><td><input type="text" class="calendariocontiempo" value="" id="fechatiempo" name="fechatiempo" /></td></tr>
+
+        <tr><td>Doble Mov.</td><td>
+        <div id="traslado" style="text-align: center;line-height: 30px;">
+            <input type="radio" name="traslado" id="traslado_no" checked="checked" value="0"/>
+            <label for="traslado_no">No</label>&nbsp;
+            
+            <input type="radio" name="traslado" id="traslado_si" value="1"/>
+            <label for="traslado_si">Si</label>&nbsp;
+        </div>
+        </td></tr>
         
         <tr>
             <td>Posición de contenedor</td><td>
@@ -72,7 +93,6 @@ while ($f = db_fetch($r)) $tagsCheque[] = $f['cheque'];
     nivel_deseado = 0;
         
     $(function () {
-        $( "#cheque" ).autocomplete({source: ["<?php echo join('","', $tagsCheque) ;?>"]});
         
         $("#cancelar_movimiento").click(function(){
             $('#frm_movimiento_contenedores')[0].reset();
@@ -85,10 +105,18 @@ while ($f = db_fetch($r)) $tagsCheque[] = $f['cheque'];
         
         $('#frm_movimiento_contenedores').submit(function(event){
             event.preventDefault();
-    
-            if ($("#cheque").val() == "")
+        
+            
+            if ( !Date.parseExact($("#fechatiempo").val(), "yyy-MM-dd HH:mm:ss") )
             {
-                alert ("Ingrese el nombre del cheque.");
+                alert ("El formato de la fecha parece incorrecto.");
+                $("#fechatiempo").focus();
+                return false;   
+            }
+            
+            if ($("select#cheque option:selected").val() == "")
+            {
+                alert ("Seleccione un cheque.");
                 return false;
             }
 
@@ -111,9 +139,13 @@ while ($f = db_fetch($r)) $tagsCheque[] = $f['cheque'];
             //$("#contenedor_mapa").html('<p>Guardando datos...</p><br /><img src="/IMG/general/cargando.gif" />');
             $("#contenedor_visual").css('left',0).css('top',0).css('height',0).css('width',0);
             
-            $.post('ajax.movimiento.php',$('#frm_movimiento_contenedores').serialize(),function (){
-                iniciar_mapa();
-                $('#frm_movimiento_contenedores')[0].reset();
+            $.post('ajax.movimiento.php',$('#frm_movimiento_contenedores').serialize(),function (datos){
+                if (datos == 'ok') {
+                    iniciar_mapa();
+                    $('#frm_movimiento_contenedores')[0].reset();
+                } else {
+                    alert('ERROR: ' + datos);
+                }
             });
         });
         
@@ -272,5 +304,7 @@ while ($f = db_fetch($r)) $tagsCheque[] = $f['cheque'];
                 $('#opsal_mapa #contenedor_mapa table').css('cursor','auto');
             }
         });
+        
+        $("#traslado").buttonset();
     });
 </script>

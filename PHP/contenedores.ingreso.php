@@ -12,15 +12,24 @@ if (mysqli_num_rows($r) > 0)
         $options_agencia .= '<option value="'.$registro['codigo_usuario'].'">'.$registro['usuario'].'</option>';
     }
 }
+
+$c = 'SELECT nombre FROM cheques WHERE flag_activo=1 ORDER BY nombre ASC';
+$r = db_consultar($c);
+$options_cheques = '<option selected="selected" value="">Seleccione uno</option>';
+if (mysqli_num_rows($r) > 0)
+{
+    while ($registro = mysqli_fetch_assoc($r))
+    {
+        $options_cheques .= '<option value="'.$registro['nombre'].'">'.$registro['nombre'].'</option>';
+    }
+}
 ?>
 <form id="frm_ingreso_contenedores" action="/contenedores.html?modo=ingreso" method="post" autocomplete="off">
 <table class="tabla-estandar opsal_tabla_ancha">
     <tbody>
         <tr><td>Naviera</td><td><select id="codigo_agencia" name="codigo_agencia"><?php echo $options_agencia; ?></select></td></tr>
         <tr><td>Fecha ingreso</td><td><input type="text" class="calendariocontiempo" value="" id="fechatiempo_ingreso" name="fechatiempo_ingreso" /></td></tr>
-        <tr><td>CEPA Salida</td><td><input type="text" class="calendariocontiempo" value="" id="cepa_salida" name="cepa_salida" /></td></tr>
         <tr><td>ARIVU Ingreso</td><td><input type="text" class="calendario" value="" id="arivu_ingreso" name="arivu_ingreso" /></td></tr>
-        <tr><td>No. ARIVU</td><td><input type="text" value="" id="arivu_referencia" name="arivu_referencia" /></td></tr>
         <tr><td>No. EIR</td><td><input type="text" value="" id="eir_ingreso" name="eir_ingreso" /></td></tr>
         <tr><td>Contenedor</td><td><input type="text" value="" id="codigo_contenedor" name="codigo_contenedor" /></td></tr>
         
@@ -55,13 +64,19 @@ if (mysqli_num_rows($r) > 0)
 
         <input type="radio" name="tipo_contenedor" id="clase_ot" value="OT"/>
         <label for="clase_ot">OT</label>&nbsp;
+
+        <input type="radio" name="tipo_contenedor" id="clase_ho" value="HO"/>
+        <label for="clase_ho">OTHC</label>&nbsp;
         
         <input type="radio" name="tipo_contenedor" id="clase_rf" value="RF"/>
         <label for="clase_rf">RF</label>&nbsp;
         
         <input type="radio" name="tipo_contenedor" id="clase_fr" value="FR"/>
         <label for="clase_fr">FR</label>&nbsp;
-
+        
+        <input type="radio" name="tipo_contenedor" id="clase_fl" value="FL"/>
+        <label for="clase_fl">FL</label>&nbsp;
+        
         <input type="radio" name="tipo_contenedor" id="clase_tq" value="FR"/>
         <label for="clase_tq">TQ</label>&nbsp;        
         </div>
@@ -78,22 +93,30 @@ if (mysqli_num_rows($r) > 0)
             </tbody>
             </table>
         </td></tr>  
-        <tr><td>Tara (lbs)</td><td><input type="text" value="" id="tara" name="tara" /></td></tr>
-        <tr><td>Chasis</td><td><input type="text" value="" id="chasis" name="chasis" /></td></tr>
-        <tr><td>Cliente</td><td><input type="text" value="" id="cliente_ingreso" name="cliente_ingreso" /></td></tr>
+        
+        
+
         <tr><td>Transporte</td><td><input type="text" value="" id="transportista_ingreso" name="transportista_ingreso" /></td></tr>
         <tr><td>Chofer</td><td><input type="text" value="" id="chofer_ingreso" name="chofer_ingreso" /></td></tr>
+        <tr><td>Chasis</td><td><input type="text" value="" id="chasis" name="chasis" /></td></tr>
+        <tr><td>Tara (lbs)</td><td><input type="text" value="" id="tara" name="tara" /></td></tr>
+        <tr><td>CEPA Salida</td><td><input type="text" class="calendariocontiempo" value="" id="cepa_salida" name="cepa_salida" /></td></tr>
+        <tr><td>No. ARIVU</td><td><input type="text" value="" id="arivu_referencia" name="arivu_referencia" /></td></tr>
+        <tr><td>Año fab.</td><td><input type="text" value="" id="ano_fabricacion" name="ano_fabricacion" /></td></tr>
+        <tr><td>Cliente</td><td><input type="text" value="" id="cliente_ingreso" name="cliente_ingreso" /></td></tr>
+        <tr><td>Booking</td><td><input type="text" value="" id="booking_number_ingreso" name="booking_number_ingreso" /></td></tr>
         <tr><td>Buque</td><td><input type="text" value="" id="buque_ingreso" name="buque_ingreso" /></td></tr>
         
-        <tr><td>Cheque</td><td><input type="text" value="" id="cheque" name="cheque_ingreso" /></td></tr>
+        <tr><td>Cheque</td><td><select id="cheque" name="cheque_ingreso"><?php echo $options_cheques; ?></select></td></tr>
         
         <tr><td>¿Con daño?</td><td>
         <div id="ingreso_con_danos" style="text-align: center;line-height: 30px;">
-        <input type="radio" name="ingreso_con_danos" id="ingreso_con_danos_no" checked="checked" value="0"/>
-        <label for="ingreso_con_danos_no">No</label>&nbsp;
-        
-        <input type="radio" name="ingreso_con_danos" id="ingreso_con_danos_si" value="1"/>
-        <label for="ingreso_con_danos_si">Si</label>&nbsp;
+            <input type="radio" name="ingreso_con_danos" id="ingreso_con_danos_no" checked="checked" value="0"/>
+            <label for="ingreso_con_danos_no">No</label>&nbsp;
+            
+            <input type="radio" name="ingreso_con_danos" id="ingreso_con_danos_si" value="1"/>
+            <label for="ingreso_con_danos_si">Si</label>&nbsp;
+        </div>
         </td></tr>
         
         <tr><td>Observaciones</td><td><textarea name="observaciones_ingreso"></textarea></td></tr>
@@ -146,7 +169,6 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
         $( "#buque_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsBuque) ;?>"]});
         $( "#cliente_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsCliente) ;?>"]});
         $( "#transportista_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsTransportista) ;?>"]});
-        $( "#cheque" ).autocomplete({source: ["<?php echo join('","', $tagsCheque) ;?>"]});
         $( "#chofer_ingreso" ).autocomplete({source: ["<?php echo join('","', $tagsChofer) ;?>"]});
         
         $("#codigo_contenedor").blur(function(){
@@ -156,8 +178,14 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
         $('#frm_ingreso_contenedores').submit(function(event){
             event.preventDefault();
 
+            if ( !Date.parseExact($("#fechatiempo_ingreso").val(), "yyy-MM-dd HH:mm:ss") )
+            {
+                alert ("El formato de la fecha de ingreso parece incorrecto.");
+                return false;   
+            }
+            
             // Verifiquemos que el número de contenedor pase la válidación
-            if (/[\D]{4}\d{7}/.test($("#codigo_contenedor").val()) == false )
+            if (/^[\D]{4}\d{7}$/.test($("#codigo_contenedor").val()) == false )
             {
                 alert ("Ingrese un identificador válido de contenedor.\n4 letras y 7 números.");
                 return false;
@@ -175,12 +203,18 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
                 return false;
             }
             
-            if ($("select#codigo_agencia option:selected").val() == "")
+            if ($("select#codigo_agencia option:selected").val() == "" || $("select#codigo_agencia option:selected").val() == "0")
             {
                 alert ("Seleccione una agencia.");
                 return false;
             }
                         
+            if ($("select#cheque option:selected").val() == "")
+            {
+                alert ("Seleccione un cheque.");
+                return false;
+            }
+            
             if ($("#posicion_columna").val() == "" || $("#posicion_fila").val() == "" || $("#posicion_nivel").val() == "")
             {
                 alert ("Verifique la posición ingresada.");
@@ -205,7 +239,7 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
                 return false;
             }
         
-            if ($("#chasis").val() != "" && /[\D]{4}\d{6}/.test($("#chasis").val()) == false )
+            if ($("#chasis").val() != "" && /^[\D]{4}\d{6}$/.test($("#chasis").val()) == false )
             {
                 alert ("Verifique número de chasis ingresado.\n4 letras y 6 números.");
                 return false;
@@ -230,7 +264,7 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
                 alert ("Ingrese la fecha de ingreso del ARIVU.");
                 return false;
             }
-
+            
             // MSC
             /*
             if ($("#arivu_referencia").val() == "")
@@ -248,9 +282,13 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
             
             $("#contenedor_visual").css('left',0).css('top',0).css('height',0).css('width',0);
             
-            $.post('ajax.ingreso.php',$('#frm_ingreso_contenedores').serialize(),function (){
-                iniciar_mapa();
-                $('#frm_ingreso_contenedores')[0].reset();
+            $.post('ajax.ingreso.php',$('#frm_ingreso_contenedores').serialize(),function (datos){
+                if (datos == 'ok') {
+                    iniciar_mapa();
+                    $('#frm_ingreso_contenedores')[0].reset();
+                } else {
+                    alert('ERROR: ' + datos);
+                }
             });
             
             return false;
@@ -296,6 +334,7 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
             
             
             // Búsquemos que la cola no se monte sobre otro contenedor
+            /*
             if (cubicaje > 20) {
                 if ($('#'+x+'_'+(parseInt(y)-1)).attr('nivel') != '0') {
                     alert('No se puede ubicar el contenedor en este punto. La cola del contenedor queda sobre otro bloque.');
@@ -309,6 +348,7 @@ while ($f = db_fetch($r)) $tagsChofer[] = $f['chofer_ingreso'];
                     return false;
                 }
             }
+            */
             
             //console.log('Ubicando contenedor de ' + cubicaje + ' pies³ en '+ x + ',' + y + '['+referencia.position().left+','+referencia.position().top+']');            
             

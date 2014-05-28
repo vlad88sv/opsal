@@ -13,6 +13,8 @@ require_once ("$base/db.php"); // Conexión hacia la base de datos [depende de s
 require_once ("$base/db-stubs.php"); // Generación de objetos UI desde la base de datos [depende de ui.php]
 require_once ("$base/db-ui.php"); // Generación de objetos UI desde la base de datos [depende de ui.php]
 require_once ("$base/usuario.php"); // Gestión de datos de usuario [depende de sesion.php]
+require_once ("$base/edi.php"); // EDIFACT
+require_once ("$base/comunicaciones.php"); // PUSH para FTP y SFTP
 
 function parse_backtrace(){
 

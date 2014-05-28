@@ -71,6 +71,6 @@ th
     $cssToInlineStyles = new CSSToInlineStyles($html);
     $cssToInlineStyles->setUseInlineStylesBlock(true);
     $cssToInlineStyles->setCleanup(true);
-    echo html_entity_decode(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', '<h1>'.PROY_EMPRESA.'</h1>'.$cssToInlineStyles->convert()));
+    echo html_entity_decode(preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', '<div style="text-align:center;"><img src="'.PROY_URL.'IMG/stock/logo_OPSAL_mini.jpg"></div><h1>'.PROY_EMPRESA.'</h1>'.$cssToInlineStyles->convert()));
 ?>
 </body>

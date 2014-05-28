@@ -168,45 +168,6 @@ if (isset($_POST['guardar']))
 </form>
 </div>
 <hr />
-<?php
-$ultimos_ingresos = '';
-
-$c = '
-SELECT
-t1.`fecha_ingreso`,
-t1.`ID_buque`,
-t1.`ID_carga_descarga`,
-t1.`ingresado_por`,
-t1.`supervisor`,
-t1.`marchamador`,
-t1.`inicio_operacion`,
-t1.`final_operacion`,
-t2.`usuario` AS "nombre_operador",
-t3.`usuario` AS "nombre_agencia"
-FROM `opsal`.`opsal_carga_descarga` AS t1
-LEFT JOIN `opsal`.`opsal_usuarios` AS t2 ON (t1.`ingresado_por` = t2.`codigo_usuario`)
-LEFT JOIN `opsal`.`opsal_usuarios` AS t3 ON (t1.`codigo_agencia` = t3.`codigo_usuario`)
-ORDER BY t1.`fecha_ingreso` DESC LIMIT 20
-';
-$resultado = db_consultar($c);
-
-if (mysqli_num_rows($resultado) == 0)
-{
-    $ultimos_ingresos .= '<p>No se encontraron ingresos</p>';
-} else {
-    $ultimos_ingresos .= '<table class="tabla-estandar opsal_tabla_ancha opsal_tabla_borde_oscuro">';
-    while ($f = mysqli_fetch_assoc($resultado))
-    {
-        $ultimos_ingresos .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$f['ID_carga_descarga'],$f['nombre_operador'],$f['supervisor'],$f['marchamador'],$f['nombre_agencia'],$f['ID_buque'],$f['inicio_operacion'],$f['final_operacion']);
-    }
-    $ultimos_ingresos .= '<thead><tr><th>ID</th><th>Ingresó</th><th>Supervisó</th><th>Marchamó</th><th>Agencia</th><th>Buque</th><th>Inicio operación</th><th>Final operación</th></tr></thead>';
-    $ultimos_ingresos .= '</table>';
-}
-?>
-<h2>Últimos 20 ingresos</h2>
-<div class="opsal_burbuja">
-    <?php echo $ultimos_ingresos; ?>
-</div>
 <script type="text/javascript">
     $(function(){
         

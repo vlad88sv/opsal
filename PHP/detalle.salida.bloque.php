@@ -48,6 +48,7 @@ if (isset($_POST['ejecutar_salida']))
             $DATOS['codigo_posicion'] = 0;
             $DATOS['nivel'] = 0;
             $DATOS['cobrar_a'] = $codigo_agencia;
+            $DATOS['fechatiempo'] = $_POST['fechatiempo_egreso'];
             $DATOS['motivo'] = 'desestiba';
             $DATOS['codigo_orden'] = $codigo_orden;
             $DATOS['codigo_usuario'] = _F_usuario_cache('codigo_usuario');

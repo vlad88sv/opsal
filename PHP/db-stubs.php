@@ -42,4 +42,11 @@ function registrar($contenido, $contexto, $ID = 0)
 {
     db_agregar_datos('opsal_bitacora',array('contenido' => $contenido, 'contexto' => $contexto, 'codigo_usuario' => _F_usuario_cache('codigo_usuario'), 'ID' => $ID));
 }
+
+//$severidad = ('advertencia','normal','critica')
+function guardar_error($contenido, $contexto,$severidad)
+{
+    return;
+}
+
 ?>

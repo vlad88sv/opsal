@@ -2,9 +2,9 @@
 if (empty($_GET['modo']))
     $_GET['modo'] = 'agencias';
 
-$menu[] = array('url' => '/administracion.html','modo' => 'patio','titulo' => 'PATIO');
-$menu[] = array('url' => '/administracion.html','modo' => 'agencias','titulo' => 'AGENCIAS');
-$menu[] = array('url' => '/administracion.html','modo' => 'usuarios','titulo' => 'USUARIOS');
+$menu[] = array('url' => '/administracion.html', 'modo' => 'patio'   , 'titulo' => 'PATIO');
+$menu[] = array('url' => '/administracion.html', 'modo' => 'agencias', 'titulo' => 'AGENCIAS');
+$menu[] = array('url' => '/administracion.html', 'modo' => 'usuarios', 'titulo' => 'USUARIOS');
 
 echo '<div style="border-bottom: 1px solid #7A7A7A;">';
 foreach ($menu AS $id => $datos)
@@ -29,6 +29,18 @@ switch ($_GET['modo'])
         break;
     case 'transportistas':
         require_once('PHP/admin.transportistas.php');
+        break;
+    case 'tarifas':
+        require_once('PHP/admin.tarifas.php');
+        break;
+    case 'editar.agencia':
+        require_once('PHP/admin.editar.agencia.php');
+        break;
+    case 'agregar.agencia':
+        require_once('PHP/admin.agregar.agencia.php');
+        break;
+    case 'edi':
+        require_once('PHP/admin.edi.php');
         break;
     default:
         echo '<p>No implementado</p>';

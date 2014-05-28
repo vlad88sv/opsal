@@ -1,25 +1,26 @@
 <?php
 // Proyecto
-define('PROY_URL_NOPROTOCOL','sistemaopsal.tk/');
+define('PROY_URL_NOPROTOCOL',$_SERVER['HTTP_HOST'].'/');
 
-define('PROY_URL_ESTATICA','http://sistemaopsal.tk/');
+define('PROY_URL_ESTATICA','http://'.PROY_URL_NOPROTOCOL);
 define('PROY_URL','http://'.PROY_URL_NOPROTOCOL);    
 
 define('PROY_URL_SSL','https://'.PROY_URL_NOPROTOCOL);
 define('PROY_URL_NOSSL','http://'.PROY_URL_NOPROTOCOL);
 
-define('PROY_URL_AMIGABLE','www.sistemaopsal.tk');
+define('PROY_URL_AMIGABLE','ocy.opsal.net');
 define('PROY_URL_ACTUAL_DINAMICA',curPageURL());
 define('PROY_URL_ACTUAL',curPageURL(true));
 define('PROY_URL_ACTUAL_NOSSL',curPageURL(true,false,'nunca'));
 define('PROY_URL_ACTUAL_AMIGABLE',curPageURL(true,true));
 define('PLATAFORMA_MOBIL',false);
 
+define('__IVA__', 13); // Porcentaje de iva
 
 // Niveles
-define('_N_administrador',      9);
-define('_N_vendedor',           7);
-define('_N_usuario',            3);
+define('_N_administrador',      'jefatura');
+define('_N_tecnico',           'tecnico');
+define('_N_agencia',            'agencia');
 
 // Estados para articulos
 define('_art_activo',           0);

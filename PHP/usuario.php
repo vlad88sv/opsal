@@ -6,7 +6,7 @@ function _F_usuario_acceder($correo, $clave,$enlazar=true){
     $correo = db_codex (trim($correo));
     $clave =db_codex (trim($clave));
 
-    $c = "SELECT * FROM $tablausuarios WHERE LOWER(usuario)=LOWER('$correo') AND clave=SHA1('$clave') LIMIT 1";
+    $c = "SELECT * FROM $tablausuarios WHERE ( LOWER(usuario)=LOWER('$correo') || LOWER(correo)=LOWER('$correo') ) AND clave=SHA1('$clave') LIMIT 1";
     $resultado = db_consultar ($c);
     if ($resultado && mysqli_num_rows($resultado)) {
         $_SESSION['autenticado'] = true;

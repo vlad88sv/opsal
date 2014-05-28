@@ -1,9 +1,8 @@
 <?php
 require_once('config.php');
+require_once ('PHP/mpdf/mpdf.php');
 ini_set('memory_limit', '256M');
 set_time_limit(0);
-header("Content-type: application/pdf; name='pdf'");
-header('Content-Disposition: filename="'.urldecode($_POST['archivo']).'.pdf"');
 header("Pragma: no-cache");
 header("Expires: 0");
 ob_start();
@@ -21,18 +20,21 @@ ob_start();
     h1 {font-size: 16pt;}
     h2 {font-size: 13pt;font-weight:normal;}
     h3 {font-size: 12pt;font-weight:normal;}
-    table {border-collapse: collapse;}
-    table th {background-color:white !important;font-weight:bold;}
-    table td {background-color:white !important;font-weight:normal;}
+    table {border-collapse: collapse;background-color:#FFF !important;}
+    th {font-weight:bold;}
+    table.tabla-estandar td {font-weight:normal;background-color:#FFF !important;}
 </style>
-<h1><?php echo PROY_EMPRESA; ?></h1>
-<?php echo strip_tags(urldecode(@$_POST['data']),'<div><table><p><tr><th><tbody><thead><td><h1><h2>'); ?>
+<?php if (!isset($_POST['encabezado'])) echo '<div style="text-align:center;"><img src="/IMG/stock/logo_OPSAL_mini.jpg"></div>'.PROY_EMPRESA; ?>
+<?php echo strip_tags(urldecode(@$_POST['data']),'<div><table><p><tr><th><tbody><thead><td><h1><h2><br><b><strong>'); ?>
 </body>
 <?
 $html = ob_get_clean();
-require_once ('PHP/mpdf/mpdf.php');
-$mpdf=new mPDF();
+
+if (isset($_POST['vertical']))
+    $mpdf=new mPDF('es_SV','Letter');
+else
+    $mpdf=new mPDF('es_SV','Letter-L');
 $mpdf->CSSselectMedia='mpdf';
 $mpdf->WriteHTML($html);
-$mpdf->Output();
+$mpdf->Output(strip_tags(urldecode($_POST['archivo'])).'.pdf','I');
 ?>
