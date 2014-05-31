@@ -20,7 +20,7 @@ if (isset($_POST['guardar']))
     }
     
     
-    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_contenedor', 'tipo_contenedor', 'codigo_agencia', 'codigo_posicion', 'nivel', 'clase', 'tara', 'chasis', 'chasis_egreso', 'transportista_ingreso', 'transportista_egreso', 'buque_ingreso', 'buque_egreso', 'cheque_ingreso', 'cheque_egreso', 'cepa_salida', 'arivu_ingreso', 'arivu_referencia', 'observaciones_egreso', 'observaciones_ingreso', 'destino', 'estado', 'fechatiempo_ingreso', 'fechatiempo_egreso', 'ingresado_por', 'egresado_por', 'sucio', 'tipo_salida', 'eir_ingreso', 'eir_egreso', 'ingreso_con_danos', 'cliente_ingreso','ano_fabricacion','booking_number', 'booking_number_ingreso', 'clase_taller', 'observaciones_taller')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('codigo_contenedor', 'tipo_contenedor', 'codigo_agencia', 'codigo_posicion', 'nivel', 'clase', 'tara', 'chasis', 'chasis_egreso', 'transportista_ingreso', 'transportista_egreso', 'buque_ingreso', 'buque_egreso', 'cheque_ingreso', 'cheque_egreso', 'cepa_salida', 'arivu_ingreso', 'arivu_referencia', 'observaciones_egreso', 'observaciones_ingreso', 'destino', 'estado', 'fechatiempo_ingreso', 'fechatiempo_egreso', 'ingresado_por', 'egresado_por', 'sucio', 'tipo_salida', 'eir_ingreso', 'eir_egreso', 'ingreso_con_danos', 'cliente_ingreso','ano_fabricacion','booking_number', 'booking_number_ingreso', 'clase_taller', 'observaciones_taller','ingreso_marchamo','egreso_marchamo')));
     
     //print_r($DATOS);
     
@@ -62,6 +62,7 @@ if ( _F_usuario_cache('nivel') == 'tecnico' || _F_usuario_cache('nivel') == 'jef
     echo '<tr><th>Agencia</th><td><select name="codigo_agencia">'.db_ui_opciones('codigo_usuario','usuario','opsal_usuarios','WHERE nivel="agencia"','','',$f['codigo_agencia']).'</select></td></tr>';
     echo '<tr><th>Buque ingreso</th><td><input type="text" name="buque_ingreso" value="'.$f['buque_ingreso'].'" /></td></tr>';
     echo '<tr><th>Booking Number</th><td><input type="text" name="booking_number_ingreso" value="'.$f['booking_number_ingreso'].'" /></td></tr>';
+    echo '<tr><th>Marchamo</th><td><input type="text" name="ingreso_marchamo" value="'.$f['ingreso_marchamo'].'" /></td></tr>';
     echo '<tr><th>Fecha CEPA</th><td><input type="text" name="cepa_salida" class="calendariocontiempo" value="'.$f['cepa_salida'].'" /></td></tr>';
     echo '<tr><th>Fecha ARIVU</th><td><input type="text" name="arivu_ingreso" class="calendario" value="'.$f['arivu_ingreso'].'" /></td></tr>';
     echo '<tr><th>Número de ARIVU</th><td><input type="text" name="arivu_referencia" value="'.$f['arivu_referencia'].'" /></td></tr>';
@@ -78,6 +79,7 @@ if ( _F_usuario_cache('nivel') == 'tecnico' || _F_usuario_cache('nivel') == 'jef
         echo '<tr><th>Tipo salida</th><td>'.ui_combobox('tipo_salida',ui_array_a_opciones(array('terrestre' => 'Terrestre','embarque' => 'Embarque')),$f['tipo_salida']).'</td></tr>';
         echo '<tr><th>Fecha egreso</th><td><input type="text" name="fechatiempo_egreso" class="calendariocontiempo" value="'.$f['fechatiempo_egreso'].'" /></td></tr>';
         echo '<tr><th>Booking Number</th><td><input type="text" name="booking_number" value="'.$f['booking_number'].'" /></td></tr>';
+        echo '<tr><th>Marchamo</th><td><input type="text" name="egreso_marchamo" value="'.$f['egreso_marchamo'].'" /></td></tr>';
         echo '</table>';
     }
 } else {

@@ -109,6 +109,8 @@ if (mysqli_num_rows($r) > 0)
         
         <tr><td>Cheque</td><td><select id="cheque" name="cheque_ingreso"><?php echo $options_cheques; ?></select></td></tr>
         
+        <tr><td>Marchamo</td><td><input type="text" value="" id="ingreso_marchamo" name="ingreso_marchamo" /></td></tr>
+        
         <tr><td>¿Con daño?</td><td>
         <div id="ingreso_con_danos" style="text-align: center;line-height: 30px;">
             <input type="radio" name="ingreso_con_danos" id="ingreso_con_danos_no" checked="checked" value="0"/>

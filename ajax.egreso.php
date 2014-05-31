@@ -17,7 +17,7 @@ if (isset($_POST['guardar']))
     }
     
     
-    $DATOS = array_intersect_key($_POST,array_flip(array('cheque_egreso','chasis_egreso','transportista_egreso','buque_egreso','observaciones_egreso','fechatiempo_egreso','destino','eir_egreso','chofer_egreso','tipo_salida','booking_number')));
+    $DATOS = array_intersect_key($_POST,array_flip(array('cheque_egreso','chasis_egreso','transportista_egreso','buque_egreso','observaciones_egreso','fechatiempo_egreso','destino','eir_egreso','chofer_egreso','tipo_salida','booking_number','egreso_marchamo')));
     $DATOS['estado'] = 'fuera';
     $DATOS['egresado_por'] = _F_usuario_cache('codigo_usuario');
     

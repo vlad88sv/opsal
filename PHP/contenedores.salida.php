@@ -64,6 +64,7 @@ if (mysqli_num_rows($r) > 0)
         !-->
         
         <tr><td>Cheque</td><td><select id="cheque" name="cheque_egreso"><?php echo $options_cheques; ?></select></td></tr>
+        <tr><td>Marchamo</td><td><input type="text" value="" id="egreso_marchamo" name="egreso_marchamo" /></td></tr>
         <tr><td>Transporte</td><td><input type="text" id="transportista" name="transportista_egreso" /></td></tr>
         <tr><td>Chofer</td><td><input type="text" value="" id="chofer_egreso" name="chofer_egreso" /></td></tr>
         
